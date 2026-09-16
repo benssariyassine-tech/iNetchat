@@ -23,8 +23,7 @@ def home():
 
 @app.route('/api/health', methods=['GET'])
 def health():
-    return jsonify({"status": "ok", "app": "iNetchat",
-                    "supabase": "connected" if supabase else "not configured"})
+    return jsonify({"status": "ok", "supabase": "connected" if supabase else "no"})
 
 
 # ========== AUTH ==========
@@ -40,30 +39,27 @@ def signup():
     if not email or not password or not username:
         return jsonify({"error": "كل الحقول مطلوبة"}), 400
     if len(password) < 6:
-        return jsonify({"error": "كلمة المرور لازم 6 أحرف على الأقل"}), 400
+        return jsonify({"error": "كلمة المرور لازم 6 أحرف"}), 400
     try:
-        auth_response = supabase.auth.sign_up({"email": email, "password": password})
-        if not auth_response.user:
-            return jsonify({"error": "فشل إنشاء الحساب"}), 400
-        user_id = auth_response.user.id
+        r = supabase.auth.sign_up({"email": email, "password": password})
+        if not r.user:
+            return jsonify({"error": "فشل الإنشاء"}), 400
+        uid = r.user.id
         supabase.table('profiles').insert({
-            "id": user_id,
+            "id": uid,
             "username": username,
             "display_name": display_name or username,
-            "avatar_url": None,
-            "bio": None,
             "is_private": False
         }).execute()
         return jsonify({
             "status": "success",
-            "message": "تم إنشاء الحساب بنجاح!",
-            "user": {"id": user_id, "email": email, "username": username}
+            "user": {"id": uid, "email": email, "username": username}
         }), 201
     except Exception as e:
-        error_msg = str(e)
-        if "already registered" in error_msg.lower() or "already exists" in error_msg.lower():
-            return jsonify({"error": "هذا الإيميل مستعمل من قبل"}), 400
-        return jsonify({"error": error_msg}), 500
+        msg = str(e).lower()
+        if "already" in msg:
+            return jsonify({"error": "الإيميل مستعمل"}), 400
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route('/api/auth/login', methods=['POST'])
@@ -73,41 +69,32 @@ def login():
     data = request.get_json()
     email = data.get('email', '').strip()
     password = data.get('password', '')
-    if not email or not password:
-        return jsonify({"error": "الإيميل وكلمة المرور مطلوبين"}), 400
     try:
-        auth_response = supabase.auth.sign_in_with_password({"email": email, "password": password})
-        if not auth_response.user:
-            return jsonify({"error": "إيميل أو كلمة مرور غالطين"}), 401
-        profile = supabase.table('profiles').select('*').eq('id', auth_response.user.id).execute()
+        r = supabase.auth.sign_in_with_password({"email": email, "password": password})
+        if not r.user:
+            return jsonify({"error": "بيانات غالطة"}), 401
+        p = supabase.table('profiles').select('*').eq('id', r.user.id).execute()
         return jsonify({
             "status": "success",
-            "message": "تم تسجيل الدخول!",
-            "user": {
-                "id": auth_response.user.id,
-                "email": auth_response.user.email,
-                "access_token": auth_response.session.access_token if auth_response.session else None
-            },
-            "profile": profile.data[0] if profile.data else None
+            "user": {"id": r.user.id, "email": r.user.email},
+            "profile": p.data[0] if p.data else None
         })
     except Exception as e:
-        if "invalid" in str(e).lower():
-            return jsonify({"error": "إيميل أو كلمة مرور غالطين"}), 401
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": "إيميل أو كلمة مرور غالطين"}), 401
 
 
 # ========== USERS ==========
 @app.route('/api/users', methods=['GET'])
 def get_users():
     if not supabase:
-        return jsonify({"error": "Supabase not configured"}), 500
-    my_id = request.args.get('me', '')
+        return jsonify({"error": "no supabase"}), 500
+    me = request.args.get('me', '')
     try:
-        if my_id:
-            response = supabase.table('profiles').select('*').neq('id', my_id).limit(50).execute()
+        if me:
+            r = supabase.table('profiles').select('*').neq('id', me).limit(100).execute()
         else:
-            response = supabase.table('profiles').select('*').limit(50).execute()
-        return jsonify({"status": "success", "users": response.data})
+            r = supabase.table('profiles').select('*').limit(100).execute()
+        return jsonify({"users": r.data})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -115,15 +102,52 @@ def get_users():
 @app.route('/api/users/search', methods=['GET'])
 def search_users():
     if not supabase:
-        return jsonify({"error": "Supabase not configured"}), 500
+        return jsonify({"error": "no supabase"}), 500
     q = request.args.get('q', '').strip()
-    my_id = request.args.get('me', '')
+    me = request.args.get('me', '')
     if not q:
         return jsonify({"users": []})
     try:
-        response = supabase.table('profiles').select('*').ilike('username', '%' + q + '%').limit(20).execute()
-        users = [u for u in response.data if u['id'] != my_id]
-        return jsonify({"status": "success", "users": users})
+        r = supabase.table('profiles').select('*').or_(
+            "username.ilike.%" + q + "%,display_name.ilike.%" + q + "%"
+        ).limit(30).execute()
+        users = [u for u in r.data if u['id'] != me]
+        return jsonify({"users": users})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/profile/<user_id>', methods=['GET'])
+def get_profile(user_id):
+    if not supabase:
+        return jsonify({"error": "no supabase"}), 500
+    try:
+        r = supabase.table('profiles').select('*').eq('id', user_id).execute()
+        if not r.data:
+            return jsonify({"error": "not found"}), 404
+        return jsonify({"profile": r.data[0]})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/profile/update', methods=['POST'])
+def update_profile():
+    if not supabase:
+        return jsonify({"error": "no supabase"}), 500
+    d = request.get_json()
+    uid = d.get('user_id')
+    if not uid:
+        return jsonify({"error": "user_id required"}), 400
+    upd = {}
+    if d.get('display_name'):
+        upd['display_name'] = d['display_name'].strip()
+    if d.get('bio') is not None:
+        upd['bio'] = d['bio'].strip()
+    if 'is_private' in d:
+        upd['is_private'] = bool(d['is_private'])
+    try:
+        r = supabase.table('profiles').update(upd).eq('id', uid).execute()
+        return jsonify({"status": "success", "profile": r.data[0] if r.data else None})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -132,29 +156,25 @@ def search_users():
 @app.route('/api/chats/create', methods=['POST'])
 def create_chat():
     if not supabase:
-        return jsonify({"error": "Supabase not configured"}), 500
-    data = request.get_json()
-    user1 = data.get('user1')
-    user2 = data.get('user2')
-    if not user1 or not user2:
-        return jsonify({"error": "معلومات ناقصة"}), 400
+        return jsonify({"error": "no supabase"}), 500
+    d = request.get_json()
+    u1, u2 = d.get('user1'), d.get('user2')
+    if not u1 or not u2:
+        return jsonify({"error": "missing"}), 400
     try:
         existing = supabase.table('chats').select('*').eq('is_group', False).execute()
         for c in existing.data:
-            members = supabase.table('chat_members').select('user_id').eq('chat_id', c['id']).execute()
-            member_ids = [m['user_id'] for m in members.data]
-            if set(member_ids) == {user1, user2}:
+            m = supabase.table('chat_members').select('user_id').eq('chat_id', c['id']).execute()
+            ids = [x['user_id'] for x in m.data]
+            if set(ids) == {u1, u2}:
                 return jsonify({"status": "existing", "chat_id": c['id']})
-        chat = supabase.table('chats').insert({
-            "is_group": False,
-            "created_by": user1
-        }).execute()
-        chat_id = chat.data[0]['id']
+        chat = supabase.table('chats').insert({"is_group": False, "created_by": u1}).execute()
+        cid = chat.data[0]['id']
         supabase.table('chat_members').insert([
-            {"chat_id": chat_id, "user_id": user1},
-            {"chat_id": chat_id, "user_id": user2}
+            {"chat_id": cid, "user_id": u1},
+            {"chat_id": cid, "user_id": u2}
         ]).execute()
-        return jsonify({"status": "created", "chat_id": chat_id}), 201
+        return jsonify({"status": "created", "chat_id": cid}), 201
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -163,10 +183,10 @@ def create_chat():
 @app.route('/api/messages/<chat_id>', methods=['GET'])
 def get_messages(chat_id):
     if not supabase:
-        return jsonify({"error": "Supabase not configured"}), 500
+        return jsonify({"error": "no supabase"}), 500
     try:
-        response = supabase.table('messages').select('*').eq('chat_id', chat_id).order('created_at').execute()
-        return jsonify({"status": "success", "messages": response.data})
+        r = supabase.table('messages').select('*').eq('chat_id', chat_id).order('created_at').execute()
+        return jsonify({"messages": r.data})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -174,74 +194,115 @@ def get_messages(chat_id):
 @app.route('/api/messages/send', methods=['POST'])
 def send_message():
     if not supabase:
-        return jsonify({"error": "Supabase not configured"}), 500
-    data = request.get_json()
-    chat_id = data.get('chat_id')
-    sender_id = data.get('sender_id')
-    content = data.get('content', '').strip()
-    if not chat_id or not sender_id or not content:
-        return jsonify({"error": "معلومات ناقصة"}), 400
+        return jsonify({"error": "no supabase"}), 500
+    d = request.get_json()
+    cid = d.get('chat_id')
+    sid = d.get('sender_id')
+    content = d.get('content', '').strip()
+    if not cid or not sid or not content:
+        return jsonify({"error": "missing"}), 400
     try:
-        response = supabase.table('messages').insert({
-            "chat_id": chat_id,
-            "sender_id": sender_id,
+        r = supabase.table('messages').insert({
+            "chat_id": cid,
+            "sender_id": sid,
             "content": content,
             "message_type": "text"
         }).execute()
-        return jsonify({"status": "success", "message": response.data[0]}), 201
+        return jsonify({"message": r.data[0]}), 201
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 
-# ========== PROFILE ==========
-@app.route('/api/profile/<user_id>', methods=['GET'])
-def get_profile(user_id):
+# ========== CHAT NOTES ==========
+@app.route('/api/chat/<chat_id>/note', methods=['GET'])
+def get_chat_note(chat_id):
     if not supabase:
-        return jsonify({"error": "Supabase not configured"}), 500
+        return jsonify({"error": "no supabase"}), 500
     try:
-        res = supabase.table('profiles').select('*').eq('id', user_id).execute()
-        if not res.data:
-            return jsonify({"error": "Profile not found"}), 404
-        return jsonify({"status": "success", "profile": res.data[0]})
+        r = supabase.table('chat_notes').select('*').eq('chat_id', chat_id).execute()
+        return jsonify({"note": r.data[0] if r.data else None})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 
-@app.route('/api/profile/update', methods=['POST'])
-def update_profile():
+@app.route('/api/chat/<chat_id>/note', methods=['POST'])
+def save_chat_note(chat_id):
     if not supabase:
-        return jsonify({"error": "Supabase not configured"}), 500
-    data = request.get_json()
-    user_id = data.get('user_id')
-    display_name = data.get('display_name', '').strip()
-    bio = data.get('bio', '').strip()
-    is_private = data.get('is_private', False)
-    if not user_id:
-        return jsonify({"error": "User ID required"}), 400
-    update_data = {}
-    if display_name:
-        update_data['display_name'] = display_name
-    if bio is not None:
-        update_data['bio'] = bio
-    update_data['is_private'] = bool(is_private)
+        return jsonify({"error": "no supabase"}), 500
+    d = request.get_json()
+    uid = d.get('user_id')
+    content = d.get('content', '').strip()
+    if not uid or not content:
+        return jsonify({"error": "missing"}), 400
     try:
-        res = supabase.table('profiles').update(update_data).eq('id', user_id).execute()
-        return jsonify({"status": "success", "message": "تم التحديث", "profile": res.data[0] if res.data else None})
+        existing = supabase.table('chat_notes').select('*').eq('chat_id', chat_id).execute()
+        if existing.data:
+            r = supabase.table('chat_notes').update({
+                "content": content,
+                "user_id": uid
+            }).eq('chat_id', chat_id).execute()
+        else:
+            r = supabase.table('chat_notes').insert({
+                "chat_id": chat_id,
+                "user_id": uid,
+                "content": content
+            }).execute()
+        return jsonify({"note": r.data[0]})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 
-@app.route('/api/profile/delete', methods=['POST'])
-def delete_profile():
+@app.route('/api/chat/<chat_id>/note', methods=['DELETE'])
+def delete_chat_note(chat_id):
     if not supabase:
-        return jsonify({"error": "Supabase not configured"}), 500
-    data = request.get_json()
-    user_id = data.get('user_id')
-    if not user_id:
-        return jsonify({"error": "User ID required"}), 400
+        return jsonify({"error": "no supabase"}), 500
     try:
-        supabase.table('profiles').delete().eq('id', user_id).execute()
-        return jsonify({"status": "success", "message": "تم حذف الحساب"})
+        supabase.table('chat_notes').delete().eq('chat_id', chat_id).execute()
+        return jsonify({"status": "success"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ========== POSTS (تغريدة) ==========
+@app.route('/api/posts', methods=['GET'])
+def get_posts():
+    if not supabase:
+        return jsonify({"error": "no supabase"}), 500
+    try:
+        r = supabase.table('posts').select('*').order('created_at', desc=True).limit(50).execute()
+        return jsonify({"posts": r.data})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/posts/create', methods=['POST'])
+def create_post():
+    if not supabase:
+        return jsonify({"error": "no supabase"}), 500
+    d = request.get_json()
+    uid = d.get('user_id')
+    content = d.get('content', '').strip()
+    image = d.get('image_url')
+    if not uid or not content:
+        return jsonify({"error": "محتوى المنشور مطلوب"}), 400
+    try:
+        r = supabase.table('posts').insert({
+            "user_id": uid,
+            "content": content,
+            "image_url": image
+        }).execute()
+        return jsonify({"post": r.data[0]}), 201
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/posts/<post_id>', methods=['DELETE'])
+def delete_post(post_id):
+    if not supabase:
+        return jsonify({"error": "no supabase"}), 500
+    try:
+        supabase.table('posts').delete().eq('id', post_id).execute()
+        return jsonify({"status": "success"})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
