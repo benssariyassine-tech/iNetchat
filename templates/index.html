@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>iNetchat — دردشة خاصة</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800;900&family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 :root {
@@ -130,7 +131,7 @@ body.light-mode .app-header { background: rgba(242,242,247,0.85); }
 
 /* CHAT */
 #chatWindow { position: fixed; inset: 0; background: var(--bg);
-  z-index: 500; display: none; flex-direction: column; }
+  z-index: 1500; display: none; flex-direction: column; }
 #chatWindow.show { display: flex; animation: slideIn 0.3s ease; }
 @keyframes slideIn { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: translateX(0); } }
 .chat-header { display: flex; align-items: center; gap: 12px;
@@ -158,7 +159,10 @@ body.light-mode .chat-header { background: rgba(242,242,247,0.9); }
   flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .chat-messages { flex: 1; overflow-y: auto; padding: 20px 16px;
-  display: flex; flex-direction: column; gap: 8px; }
+  display: flex; flex-direction: column; gap: 8px;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(10,132,255,0.05), transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(90,200,250,0.05), transparent 40%); }
 .msg { max-width: 78%; padding: 10px 14px; border-radius: 18px;
   font-size: 14px; line-height: 1.5; word-wrap: break-word;
   animation: msgIn 0.25s ease; position: relative; }
@@ -294,10 +298,10 @@ body.light-mode .search-fab { background: rgba(255,255,255,0.95); }
 .post-actions { display: flex; justify-content: flex-end; gap: 8px; }
 .post-del { background: rgba(255,69,58,0.1); color: var(--danger);
   border: 1px solid rgba(255,69,58,0.3); padding: 6px 12px;
-  border-radius: 10px; font-size: 11px90; font-weight: 800;
-  cursor: pointer; fontpx-family: inherit; }
+  border-radius: 10px; font-size: 11px; font-weight: 800;
+  cursor: pointer; font-family: inherit; }
 
-.fab-create { position;: right:  fixed; bottom: 20px;
+.fab-create { position: fixed; right: 20px; bottom: 90px;
   width: 56px; height: 56px; border-radius: 50%;
   background: linear-gradient(135deg,var(--accent),var(--accent2));
   border: none; color: #fff; cursor: pointer;
@@ -309,13 +313,14 @@ body.light-mode .search-fab { background: rgba(255,255,255,0.95); }
 
 /* MODAL */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7);
-  backdrop-filter: blur(6px); z-index: 800;
+  backdrop-filter: blur(6px); z-index: 2000;
   display: none; align-items: center; justify-content: center;
   padding: 20px; }
 .modal-overlay.show { display: flex; animation: fadeUp 0.3s ease; }
 .modal-card { background: var(--card); border: 1px solid var(--border);
   border-radius: 24px; padding: 24px 22px; width: 100%;
-  max-width: 400px; max-height: 90vh; overflow-y: auto; }
+  max-width: 400px; max-height: 90vh; overflow-y: auto;
+  position: relative; }
 .modal-card h3 { font-size: 18px; font-weight: 900;
   margin-bottom: 20px; text-align: center; }
 .modal-btn-row { display: flex; gap: 8px; margin-top: 8px; }
@@ -430,9 +435,9 @@ body.light-mode .search-fab { background: rgba(255,255,255,0.95); }
   </div>
   <div id="chatNoteBanner"></div>
   <div class="chat-messages" id="chatMessages"></div>
-  <div class="chat-input">
-    <input type="text" id="msgInput" placeholder="اكتب رسالة..." onkeypress="if(event.key==='Enter') sendMessage()" oninput="notifyTyping()">
-    <button class="chat-send" onclick="sendMessage()"><svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+  <div class="chat-input onclick">
+    <input type="text" id="msgInput"=" placeholder="اكتب رسالة..." onkeypress="ifsend(event.key==='Enter') sendMessage()" oninputMessage="notifyTyping()">
+   () <button class="chat-send""><svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
   </div>
 </div>
 
@@ -489,7 +494,15 @@ body.light-mode .search-fab { background: rgba(255,255,255,0.95); }
 <div id="toast"></div>
 
 <script>
-// ========== STATE ==========
+/* ============================================================
+   ⚙️  CONFIG — تم تعبئة المفاتيح تلقائياً
+   ============================================================ */
+const SUPABASE_URL = 'https://qmgxrnyouzanulvmpizb.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_TmPuK2aXlav91I5mA91FXw_LdgECvHf';
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+/* ============ STATE ============ */
 let authMode = 'login';
 let currentUser = null;
 let currentProfile = null;
@@ -500,8 +513,9 @@ let profileData = null;
 let currentTab = 'chats';
 let currentLang = 'ar';
 let viewingProfile = null;
+let lastMsgCount = 0;
 
-// ========== TRANSLATIONS ==========
+/* ============ TRANSLATIONS ============ */
 const T = {
   ar: {
     chats: 'المحادثات', contacts: 'جهات الاتصال', posts: 'تغريدة', settings: 'الإعدادات', search: 'البحث',
@@ -530,42 +544,55 @@ const T = {
 };
 function t(k) { return T[currentLang][k] || k; }
 
-// ========== INIT ==========
-setTimeout(() => {
+/* ============ HELPERS ============ */
+async function hashPass(s) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function touchLastSeen() {
+  if (!currentUser) return;
+  try { await sb.from('profiles').update({ last_seen: new Date().toISOString() }).eq('id', currentUser.id); } catch(e){}
+}
+
+/* ============ INIT ============ */
+setTimeout(async () => {
   document.getElementById('splash').classList.add('hide');
-  const saved = localStorage.getItem('inet_user');
   const savedLang = localStorage.getItem('inet_lang');
   if (savedLang) currentLang = savedLang;
   if (localStorage.getItem('inet_dark') === 'off') document.body.classList.add('light-mode');
+  const saved = localStorage.getItem('inet_user');
   if (saved) {
     try {
       const u = JSON.parse(saved);
       currentUser = u.user;
       currentProfile = u.profile;
       showApp();
+      touchLastSeen();
+      setInterval(touchLastSeen, 60000);
       return;
     } catch(e){}
   }
   document.getElementById('authScreen').classList.add('show');
 }, 2200);
 
-// ========== AUTH ==========
+/* ============ AUTH ============ */
 function toggleAuthMode() {
   authMode = authMode === 'login' ? 'signup' : 'login';
   const t1 = document.getElementById('authTitle');
   const s = document.getElementById('authSub');
   const b = document.getElementById('submitBtn');
   const sw = document.getElementById('switchText');
-  const sb = document.getElementById('switchBtn');
+  const sb2 = document.getElementById('switchBtn');
   const ug = document.getElementById('usernameGroup');
   const dg = document.getElementById('displayNameGroup');
   if (authMode === 'signup') {
     t1.innerText = t('signup'); s.innerText = t('signupSub'); b.innerText = t('signup');
-    sw.innerText = t('haveAccount'); sb.innerText = t('signIn');
+    sw.innerText = t('haveAccount'); sb2.innerText = t('signIn');
     ug.style.display = 'block'; dg.style.display = 'block';
   } else {
     t1.innerText = t('login'); s.innerText = t('welcomeSub'); b.innerText = t('login');
-    sw.innerText = t('noAccount'); sb.innerText = t('createOne');
+    sw.innerText = t('noAccount'); sb2.innerText = t('createOne');
     ug.style.display = 'none'; dg.style.display = 'none';
   }
 }
@@ -574,34 +601,49 @@ async function handleAuth(e) {
   e.preventDefault();
   const btn = document.getElementById('submitBtn');
   btn.disabled = true; const old = btn.innerText; btn.innerText = '...';
-  const email = document.getElementById('email').value.trim();
+  const email = document.getElementById('email').value.trim().toLowerCase();
   const password = document.getElementById('password').value;
-  const endpoint = authMode === 'login' ? '/api/auth/login' : '/api/auth/signup';
-  const payload = { email, password };
-  if (authMode === 'signup') {
-    payload.username = document.getElementById('username').value.trim();
-    payload.display_name = document.getElementById('displayName').value.trim();
-  }
+
   try {
-    const res = await fetch(endpoint, {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(payload)
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      showToast(data.error || 'Error', 'error');
-    } else if (authMode === 'signup') {
-      showToast(currentLang === 'ar' ? 'تم الإنشاء! سجل دخولك.' : 'Created! Sign in.', 'success');
-      toggleAuthMode();
+    if (authMode === 'signup') {
+      const username = document.getElementById('username').value.trim().toLowerCase();
+      const display_name = document.getElementById('displayName').value.trim();
+      if (!username) throw new Error('Username required');
+      if (password.length < 6) throw new Error('Password too short');
+
+      const { data: existingEmail } = await sb.from('profiles').select('id').eq('email', email).maybeSingle();
+      if (existingEmail) throw new Error(currentLang === 'ar' ? 'البريد مستخدم' : 'Email taken');
+      const { data: existingUser } = await sb.from('profiles').select('id').eq('username', username).maybeSingle();
+      if (existingUser) throw new Error(currentLang === 'ar' ? 'اسم المستخدم محجوز' : 'Username taken');
+
+      const hashed = await hashPass(password);
+      const { data, error } = await sb.from('profiles').insert({
+        email, username, display_name, password: hashed
+      }).select().single();
+      if (error) throw error;
+
+      currentUser = { id: data.id, email: data.email };
+      currentProfile = data;
+      localStorage.setItem('inet_user', JSON.stringify({ user: currentUser, profile: currentProfile }));
+      showToast(currentLang === 'ar' ? '✓ تم إنشاء الحساب' : '✓ Account created', 'success');
+      setTimeout(showApp, 400);
     } else {
-      currentUser = data.user;
-      currentProfile = data.profile;
-      localStorage.setItem('inet_user', JSON.stringify({user: data.user, profile: data.profile}));
+      const hashed = await hashPass(password);
+      const { data, error } = await sb.from('profiles').select().eq('email', email).eq('password', hashed).maybeSingle();
+      if (error) throw error;
+      if (!data) throw new Error(currentLang === 'ar' ? 'بيانات خاطئة' : 'Invalid credentials');
+
+      currentUser = { id: data.id, email: data.email };
+      currentProfile = data;
+      localStorage.setItem('inet_user', JSON.stringify({ user: currentUser, profile: currentProfile }));
       showToast('✓', 'success');
       setTimeout(showApp, 400);
     }
-  } catch (err) { showToast('Connection failed', 'error'); }
-  finally { btn.disabled = false; btn.innerText = old; }
+  } catch (err) {
+    showToast(err.message || 'Error', 'error');
+  } finally {
+    btn.disabled = false; btn.innerText = old;
+  }
 }
 
 function showApp() {
@@ -609,6 +651,7 @@ function showApp() {
   document.getElementById('appScreen').classList.add('show');
   document.getElementById('bottomBar').style.display = 'flex';
   switchMainTab('chats');
+  touchLastSeen();
 }
 
 function logout() {
@@ -622,7 +665,7 @@ function logout() {
   showToast('Bye 👋', 'success');
 }
 
-// ========== NAV ==========
+/* ============ NAV ============ */
 function switchMainTab(tab) {
   currentTab = tab;
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -637,14 +680,20 @@ function switchMainTab(tab) {
   else if (tab === 'settings') renderSettings();
 }
 
-// ========== USERS ==========
+/* ============ USERS ============ */
 function userCardHTML(u) {
   const init = (u.display_name || u.username || '?').charAt(0).toUpperCase();
   const online = isUserOnline(u);
-  return '<div class="card" onclick=\'openChatWith(' + JSON.stringify(u).replace(/'/g, "&#39;") + ')\'>' +
+  const safe = encodeURIComponent(JSON.stringify(u));
+  return '<div class="card" data-user="' + safe + '" onclick="openChatFromCard(this)">' +
     '<div class="card-avatar">' + init + '<div class="status-dot ' + (online ? 'online' : '') + '"></div></div>' +
-    '<div class="card-body"><div class="card-name">' + (u.display_name || u.username) + '</div>' +
-    '<div class="card-username">@' + u.username + '</div></div></div>';
+    '<div class="card-body"><div class="card-name">' + escapeHtml(u.display_name || u.username) + '</div>' +
+    '<div class="card-username">@' + escapeHtml(u.username) + '</div></div></div>';
+}
+
+function openChatFromCard(el) {
+  const u = JSON.parse(decodeURIComponent(el.getAttribute('data-user')));
+  openChatWith(u);
 }
 
 function isUserOnline(u) {
@@ -653,13 +702,17 @@ function isUserOnline(u) {
   return diff < 5 * 60 * 1000;
 }
 
+function escapeHtml(s) {
+  return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
 async function loadChats() {
   const c = document.getElementById('mainContainer');
   c.innerHTML = '<div class="section-title">' + t('chats') + '</div><div class="loader-dots"><span></span><span></span><span></span></div>';
   try {
-    const res = await fetch('/api/users?me=' + currentUser.id);
-    const data = await res.json();
-    const users = (data.users || []).slice(0, 15);
+    const { data, error } = await sb.from('profiles').select('*').neq('id', currentUser.id).limit(15);
+    if (error) throw error;
+    const users = data || [];
     if (!users.length) {
       c.innerHTML = '<div class="section-title">' + t('chats') + '</div><div class="empty">' +
         (currentLang === 'ar' ? 'مازال ما عندك حتى دردشة.<br>روح لـ جهات الاتصال.' : 'No chats yet.<br>Go to contacts.') + '</div>';
@@ -668,16 +721,16 @@ async function loadChats() {
     let html = '<div class="section-title">' + (currentLang === 'ar' ? 'ابدا محادثة مع' : 'Start chat with') + '</div>';
     users.forEach(u => { html += userCardHTML(u); });
     c.innerHTML = html;
-  } catch(e) { c.innerHTML = '<div class="empty">Error</div>'; }
+  } catch(e) { c.innerHTML = '<div class="empty">Error: ' + escapeHtml(e.message) + '</div>'; }
 }
 
 async function loadContacts() {
   const c = document.getElementById('mainContainer');
   c.innerHTML = '<div class="section-title">' + t('contacts') + '</div><div class="loader-dots"><span></span><span></span><span></span></div>';
   try {
-    const res = await fetch('/api/users?me=' + currentUser.id);
-    const data = await res.json();
-    const users = data.users || [];
+    const { data, error } = await sb.from('profiles').select('*').neq('id', currentUser.id).order('created_at', {ascending: false});
+    if (error) throw error;
+    const users = data || [];
     if (!users.length) {
       c.innerHTML = '<div class="section-title">' + t('contacts') + '</div><div class="empty">' +
         (currentLang === 'ar' ? 'ما كاينش مستخدمين.' : 'No users.') + '</div>';
@@ -686,7 +739,7 @@ async function loadContacts() {
     let html = '<div class="section-title">' + t('contacts') + ' (' + users.length + ')</div>';
     users.forEach(u => { html += userCardHTML(u); });
     c.innerHTML = html;
-  } catch(e) { c.innerHTML = '<div class="empty">Error</div>'; }
+  } catch(e) { c.innerHTML = '<div class="empty">Error: ' + escapeHtml(e.message) + '</div>'; }
 }
 
 function renderSearchPage() {
@@ -706,52 +759,63 @@ function doSearch() {
     if (!q) { box.innerHTML = '<div class="empty">🔍</div>'; return; }
     box.innerHTML = '<div class="loader-dots"><span></span><span></span><span></span></div>';
     try {
-      const res = await fetch('/api/users/search?q=' + encodeURIComponent(q) + '&me=' + currentUser.id);
-      const data = await res.json();
-      const users = data.users || [];
+      const { data, error } = await sb.from('profiles').select('*')
+        .neq('id', currentUser.id)
+        .or('username.ilike.%' + q + '%,display_name.ilike.%' + q + '%')
+        .limit(30);
+      if (error) throw error;
+      const users = data || [];
       if (!users.length) { box.innerHTML = '<div class="empty">' + (currentLang === 'ar' ? 'ما لقيناش' : 'No results') + '</div>'; return; }
       let html = '<div class="section-title">' + users.length + '</div>';
       users.forEach(u => { html += userCardHTML(u); });
       box.innerHTML = html;
-    } catch(e) { box.innerHTML = '<div class="empty">Error</div>'; }
+    } catch(e) { box.innerHTML = '<div class="empty">Error: ' + escapeHtml(e.message) + '</div>'; }
   }, 350);
 }
 
-// ========== CHAT ==========
+/* ============ CHAT ============ */
 async function openChatWith(otherUser) {
   currentChatUser = otherUser;
   document.getElementById('chatUserName').innerText = otherUser.display_name || otherUser.username;
+  document.getElementById('bottomBar').style.display = 'none';
+
   try {
-    const res = await fetch('/api/chats/create', {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({user1: currentUser.id, user2: otherUser.id})
-    });
-    const data = await res.json();
-    if (data.chat_id) {
-      currentChatId = data.chat_id;
-      document.getElementById('chatWindow').classList.add('show');
-      document.getElementById('chatMessages').innerHTML = '';
-      loadNote(); loadMessages();
-      if (msgPolling) clearInterval(msgPolling);
-      msgPolling = setInterval(loadMessages, 2500);
-    } else { showToast(data.error || 'Error', 'error'); }
-  } catch(e) { showToast('Error', 'error'); }
+    const [a, b] = currentUser.id < otherUser.id ? [currentUser.id, otherUser.id] : [otherUser.id, currentUser.id];
+    let { data: existing, error: e1 } = await sb.from('chats').select().eq('user1', a).eq('user2', b).maybeSingle();
+    if (e1) throw e1;
+    if (!existing) {
+      const { data, error } = await sb.from('chats').insert({ user1: a, user2: b }).select().single();
+      if (error) throw error;
+      existing = data;
+    }
+    currentChatId = existing.id;
+    lastMsgCount = 0;
+    document.getElementById('chatWindow').classList.add('show');
+    document.getElementById('chatMessages').innerHTML = '';
+    loadNote(); loadMessages();
+    if (msgPolling) clearInterval(msgPolling);
+    msgPolling = setInterval(loadMessages, 2500);
+  } catch(e) {
+    showToast(e.message || 'Error', 'error');
+    document.getElementById('bottomBar').style.display = 'flex';
+  }
 }
 
 function closeChat() {
   document.getElementById('chatWindow').classList.remove('show');
   if (msgPolling) { clearInterval(msgPolling); msgPolling = null; }
   currentChatId = null; currentChatUser = null;
+  document.getElementById('bottomBar').style.display = 'flex';
   switchMainTab(currentTab);
 }
 
-let lastMsgCount = 0;
 async function loadMessages() {
   if (!currentChatId) return;
   try {
-    const res = await fetch('/api/messages/' + currentChatId);
-    const data = await res.json();
-    const msgs = data.messages || [];
+    const { data, error } = await sb.from('messages')
+      .select('*').eq('chat_id', currentChatId).order('created_at', { ascending: true });
+    if (error) throw error;
+    const msgs = data || [];
     if (msgs.length === lastMsgCount) return;
     lastMsgCount = msgs.length;
     const box = document.getElementById('chatMessages');
@@ -762,11 +826,11 @@ async function loadMessages() {
     }
     msgs.forEach(m => {
       const mine = m.sender_id === currentUser.id;
-      const time = m.created_at ? new Date(m.created_at).toLocaleTimeString('ar-DZ', {hour:'2-digit', minute:'2-digit'}) : '';
+      const time = m.created_at ? new Date(m.created_at).toLocaleTimeString(currentLang === 'ar' ? 'ar-DZ' : 'en-US', {hour:'2-digit', minute:'2-digit'}) : '';
       const div = document.createElement('div');
       div.className = 'msg ' + (mine ? 'me' : 'other');
       div.innerHTML = (mine ? '<button class="msg-del" onclick="deleteMsg(' + m.id + ')">✕</button>' : '') +
-        m.content + '<span class="msg-time">' + time + '</span>';
+        escapeHtml(m.content) + '<span class="msg-time">' + time + '</span>';
       box.appendChild(div);
     });
     box.scrollTop = box.scrollHeight;
@@ -779,39 +843,39 @@ async function sendMessage() {
   if (!text || !currentChatId) return;
   input.value = '';
   try {
-    await fetch('/api/messages/send', {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({chat_id: currentChatId, sender_id: currentUser.id, content: text})
+    const { error } = await sb.from('messages').insert({
+      chat_id: currentChatId, sender_id: currentUser.id, content: text
     });
+    if (error) throw error;
     lastMsgCount = 0; loadMessages();
-  } catch(e) { showToast('Error', 'error'); }
+  } catch(e) { showToast(e.message || 'Error', 'error'); }
 }
 
 async function deleteMsg(id) {
   try {
-    await fetch('/api/messages/' + id, {method: 'DELETE'});
+    await sb.from('messages').delete().eq('id', id);
     lastMsgCount = 0; loadMessages();
   } catch(e) {}
 }
 
 function notifyTyping() {
-  // Simple typing indicator - can be extended with realtime
   const el = document.getElementById('chatUserStatus');
-  if (el) el.classList.add('typing');
-  setTimeout(() => { if (el) el.classList.remove('typing'); }, 2000);
+  if (el) { el.classList.add('typing'); el.innerText = t('typing'); }
+  setTimeout(() => {
+    if (el) { el.classList.remove('typing'); el.innerText = t('online'); }
+  }, 2000);
 }
 
-// ========== NOTES ==========
+/* ============ NOTES ============ */
 async function loadNote() {
   if (!currentChatId) return;
   try {
-    const res = await fetch('/api/chat/' + currentChatId + '/note');
-    const data = await res.json();
+    const { data } = await sb.from('chat_notes').select().eq('chat_id', currentChatId).maybeSingle();
     const banner = document.getElementById('chatNoteBanner');
-    if (data.note) {
+    if (data && data.content) {
       banner.innerHTML = '<div class="chat-note-banner" onclick="openNoteModal()">' +
         '<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' +
-        '<div class="chat-note-text">' + data.note.content + '</div></div>';
+        '<div class="chat-note-text">' + escapeHtml(data.content) + '</div></div>';
     } else {
       banner.innerHTML = '<div class="chat-note-banner" onclick="openNoteModal()" style="opacity:0.6;">' +
         '<svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
@@ -820,10 +884,12 @@ async function loadNote() {
   } catch(e){}
 }
 
-function openNoteModal() {
+async function openNoteModal() {
   document.getElementById('noteContent').value = '';
-  fetch('/api/chat/' + currentChatId + '/note').then(r => r.json())
-    .then(d => { if (d.note) document.getElementById('noteContent').value = d.note.content; });
+  try {
+    const { data } = await sb.from('chat_notes').select().eq('chat_id', currentChatId).maybeSingle();
+    if (data) document.getElementById('noteContent').value = data.content || '';
+  } catch(e){}
   document.getElementById('noteModal').classList.add('show');
 }
 function closeNoteModal() { document.getElementById('noteModal').classList.remove('show'); }
@@ -832,29 +898,33 @@ async function saveNote() {
   const content = document.getElementById('noteContent').value.trim();
   if (!content) return;
   try {
-    await fetch('/api/chat/' + currentChatId + '/note', {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({user_id: currentUser.id, content})
-    });
+    await sb.from('chat_notes').upsert({
+      chat_id: currentChatId,
+      content,
+      updated_by: currentUser.id,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'chat_id' });
     closeNoteModal(); loadNote(); showToast('✓', 'success');
-  } catch(e) {}
+  } catch(e) { showToast(e.message, 'error'); }
 }
 
 async function deleteNote() {
   try {
-    await fetch('/api/chat/' + currentChatId + '/note', {method: 'DELETE'});
+    await sb.from('chat_notes').delete().eq('chat_id', currentChatId);
     closeNoteModal(); loadNote(); showToast('✓', 'success');
   } catch(e) {}
 }
 
-// ========== POSTS ==========
+/* ============ POSTS ============ */
 async function loadPosts() {
   const c = document.getElementById('mainContainer');
   c.innerHTML = '<div class="section-title">' + t('posts') + '</div><div class="loader-dots"><span></span><span></span><span></span></div>';
   try {
-    const res = await fetch('/api/posts');
-    const data = await res.json();
-    const posts = data.posts || [];
+    const { data, error } = await sb.from('posts')
+      .select('*, profiles(username, display_name)')
+      .order('created_at', { ascending: false }).limit(50);
+    if (error) throw error;
+    const posts = data || [];
     if (!posts.length) {
       c.innerHTML = '<div class="section-title">' + t('posts') + '</div><div class="empty">' +
         (currentLang === 'ar' ? 'مازال ما كاين تغريدة.' : 'No posts yet.') + '</div>';
@@ -862,21 +932,22 @@ async function loadPosts() {
     }
     let html = '<div class="section-title">' + t('posts') + ' (' + posts.length + ')</div>';
     posts.forEach(p => {
-      const init = (p.display_name || p.username || '?').charAt(0).toUpperCase();
-      const name = p.display_name || p.username || 'User';
-      const time = p.created_at ? new Date(p.created_at).toLocaleString('ar-DZ') : '';
+      const prof = p.profiles || {};
+      const name = prof.display_name || prof.username || 'User';
+      const init = (name).charAt(0).toUpperCase();
+      const time = p.created_at ? new Date(p.created_at).toLocaleString(currentLang === 'ar' ? 'ar-DZ' : 'en-US') : '';
       const mine = p.user_id === currentUser.id;
       html += '<div class="post-card">' +
         '<div class="post-head"><div class="post-avatar">' + init + '</div>' +
-        '<div class="post-info"><div class="post-name">' + name + '</div>' +
+        '<div class="post-info"><div class="post-name">' + escapeHtml(name) + '</div>' +
         '<div class="post-time">' + time + '</div></div></div>' +
-        '<div class="post-text">' + p.content + '</div>' +
-        (p.image_url ? '<img src="' + p.image_url + '" class="post-image" onerror="this.style.display=\'none\'">' : '') +
-        (mine ? '<div class="post-actions"><button class="post-del" onclick="deletePost(\'' + p.id + '\')">' + (currentLang === 'ar' ? 'حذف' : 'Delete') + '</button></div>' : '') +
+        '<div class="post-text">' + escapeHtml(p.content) + '</div>' +
+        (p.image_url ? '<img src="' + escapeHtml(p.image_url) + '" class="post-image" onerror="this.style.display=\'none\'">' : '') +
+        (mine ? '<div class="post-actions"><button class="post-del" onclick="deletePost(' + p.id + ')">' + (currentLang === 'ar' ? 'حذف' : 'Delete') + '</button></div>' : '') +
         '</div>';
     });
     c.innerHTML = html;
-  } catch(e) { c.innerHTML = '<div class="empty">Error</div>'; }
+  } catch(e) { c.innerHTML = '<div class="empty">Error: ' + escapeHtml(e.message) + '</div>'; }
 }
 
 function openCreatePost() {
@@ -889,37 +960,35 @@ function closePostModal() { document.getElementById('postModal').classList.remov
 async function publishPost() {
   const content = document.getElementById('postContent').value.trim();
   const image = document.getElementById('postImage').value.trim();
-  if (!content) return showToast('Error', 'error');
+  if (!content) return showToast(currentLang === 'ar' ? 'اكتب شي' : 'Write something', 'error');
   try {
-    const res = await fetch('/api/posts/create', {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({user_id: currentUser.id, content, image_url: image || null})
+    const { error } = await sb.from('posts').insert({
+      user_id: currentUser.id, content, image_url: image || null
     });
-    if (res.ok) { closePostModal(); loadPosts(); showToast('✓', 'success'); }
-    else { const d = await res.json(); showToast(d.error, 'error'); }
-  } catch(e) {}
+    if (error) throw error;
+    closePostModal(); loadPosts(); showToast('✓', 'success');
+  } catch(e) { showToast(e.message, 'error'); }
 }
 
 async function deletePost(id) {
   if (!confirm(currentLang === 'ar' ? 'حذف؟' : 'Delete?')) return;
-  try { await fetch('/api/posts/' + id, {method: 'DELETE'}); loadPosts(); } catch(e) {}
+  try { await sb.from('posts').delete().eq('id', id); loadPosts(); } catch(e) {}
 }
 
-// ========== SETTINGS ==========
+/* ============ SETTINGS ============ */
 async function renderSettings() {
   const c = document.getElementById('mainContainer');
   try {
-    const res = await fetch('/api/profile/' + currentUser.id);
-    const data = await res.json();
-    if (data.profile) profileData = data.profile;
+    const { data } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
+    if (data) { profileData = data; currentProfile = data; }
   } catch(e) {}
   const p = profileData || currentProfile || {};
   const init = (p.display_name || p.username || '?').charAt(0).toUpperCase();
   c.innerHTML = '<div class="profile-content">' +
     '<div class="profile-big-avatar">' + init + '</div>' +
-    '<div class="profile-display-name">' + (p.display_name || p.username || 'User') + '</div>' +
-    '<div class="profile-username">@' + (p.username || 'user') + '</div>' +
-    '<div class="profile-bio">' + (p.bio || (currentLang === 'ar' ? 'لا يوجد بايو' : 'No bio')) + '</div>' +
+    '<div class="profile-display-name">' + escapeHtml(p.display_name || p.username || 'User') + '</div>' +
+    '<div class="profile-username">@' + escapeHtml(p.username || 'user') + '</div>' +
+    '<div class="profile-bio">' + escapeHtml(p.bio || (currentLang === 'ar' ? 'لا يوجد بايو' : 'No bio')) + '</div>' +
     '<button class="profile-edit-btn" onclick="openEditProfile()">✏️ ' + t('editProfile') + '</button>' +
 
     '<div class="settings-group"><div class="settings-group-title">' + (currentLang === 'ar' ? 'الحساب' : 'Account') + '</div>' +
@@ -985,18 +1054,14 @@ async function saveProfile() {
   const bio = document.getElementById('editBio').value.trim();
   if (!display_name) return;
   try {
-    const res = await fetch('/api/profile/update', {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({user_id: currentUser.id, display_name, bio, is_private: profileData.is_private || false})
-    });
-    const data = await res.json();
-    if (res.ok) {
-      profileData = data.profile;
-      currentProfile = data.profile;
-      localStorage.setItem('inet_user', JSON.stringify({user: currentUser, profile: currentProfile}));
-      closeEditModal(); renderSettings(); showToast('✓', 'success');
-    }
-  } catch(e) {}
+    const { data, error } = await sb.from('profiles').update({
+      display_name, bio, is_private: profileData.is_private || false
+    }).eq('id', currentUser.id).select().single();
+    if (error) throw error;
+    profileData = data; currentProfile = data;
+    localStorage.setItem('inet_user', JSON.stringify({ user: currentUser, profile: currentProfile }));
+    closeEditModal(); renderSettings(); showToast('✓', 'success');
+  } catch(e) { showToast(e.message, 'error'); }
 }
 
 async function togglePrivacy() {
@@ -1005,10 +1070,7 @@ async function togglePrivacy() {
   const el = document.getElementById('privToggle');
   if (el) el.classList.toggle('on', profileData.is_private);
   try {
-    await fetch('/api/profile/update', {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({user_id: currentUser.id, display_name: profileData.display_name, bio: profileData.bio, is_private: profileData.is_private})
-    });
+    await sb.from('profiles').update({ is_private: profileData.is_private }).eq('id', currentUser.id);
   } catch(e) {}
 }
 
@@ -1027,7 +1089,7 @@ function toggleNotifications() {
   localStorage.setItem('inet_notif', isOn ? 'on' : 'off');
 }
 
-// ========== USER PROFILE MODAL ==========
+/* ============ USER PROFILE MODAL ============ */
 function openUserProfile(user) {
   if (!user) return;
   viewingProfile = user;
@@ -1044,11 +1106,12 @@ function closeUserProfile() {
 }
 function startChatFromProfile() {
   if (!viewingProfile) return;
+  const u = viewingProfile;
   closeUserProfile();
-  openChatWith(viewingProfile);
+  openChatWith(u);
 }
 
-// ========== TOAST ==========
+/* ============ TOAST ============ */
 function showToast(msg, type) {
   type = type || 'success';
   const el = document.getElementById('toast');
