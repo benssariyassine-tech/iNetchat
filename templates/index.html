@@ -5,327 +5,337 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>iNetchat</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800;900&family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 :root {
-  --bg: #0b0b0f; --card: #16161c; --card2: #1c1c23;
-  --border: rgba(255,255,255,0.08); --text: #fff; --subtext: #8e8e93;
-  --accent: #0a84ff; --accent2: #0062d2; --danger: #ff453a; --success: #32d74b; --warning: #ff9f0a;
+  --bg: #ffffff; --text: #000000; --sub: #8e8e93; --border: #dbdbdb;
+  --card: #ffffff; --card2: #fafafa; --input: #efefef;
+  --accent: #0095f6; --accent2: #0077cc; --danger: #ed4956; --success: #2ecc71;
 }
-body.light-mode {
-  --bg: #f2f2f7; --card: #fff; --card2: #f7f7fa;
-  --border: rgba(0,0,0,0.08); --text: #000; --subtext: #636366;
+body.dark {
+  --bg: #000000; --text: #ffffff; --sub: #a8a8a8; --border: #262626;
+  --card: #000000; --card2: #1a1a1a; --input: #262626;
 }
 body {
-  font-family: 'Cairo','Poppins',-apple-system,sans-serif;
+  font-family: 'Cairo', -apple-system, sans-serif;
   background: var(--bg); color: var(--text);
   min-height: 100vh; direction: rtl; overflow-x: hidden;
-  padding-bottom: 100px; transition: background 0.3s, color 0.3s;
+  padding-bottom: 70px; transition: background 0.2s, color 0.2s;
 }
 
+/* SPLASH */
 #splash { position: fixed; inset: 0; background: var(--bg); z-index: 9999;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  transition: opacity 0.6s ease; }
+  transition: opacity 0.5s ease; }
 #splash.hide { opacity: 0; pointer-events: none; }
-.splash-logo { width: 100px; height: 100px; border-radius: 28px;
-  box-shadow: 0 15px 40px rgba(10,132,255,0.4);
-  animation: pulse 2s ease-in-out infinite; overflow: hidden; }
+.splash-logo { width: 90px; height: 90px; border-radius: 24px; overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,149,246,0.3); animation: pulse 2s infinite; }
 .splash-logo svg { width: 100%; height: 100%; display: block; }
-.splash-title { font-family: 'Poppins',sans-serif; font-size: 36px; font-weight: 900;
-  margin-top: 24px; letter-spacing: -1px;
-  background: linear-gradient(135deg,var(--accent),#5ac8fa);
-  -webkit-background-clip: text; background-clip: text;
-  -webkit-text-fill-color: transparent; }
-@keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+.splash-title { font-size: 32px; font-weight: 900; margin-top: 20px; letter-spacing: -1px;
+  background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+@keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
 
-#authScreen { display: none; width: 100%; max-width: 400px;
-  margin: 0 auto; padding: 40px 20px; min-height: 100vh;
+/* AUTH */
+#authScreen { display: none; width: 100%; max-width: 380px;
+  margin: 0 auto; padding: 40px 24px; min-height: 100vh;
   align-items: center; justify-content: center; flex-direction: column; }
-#authScreen.show { display: flex; animation: fadeUp 0.5s ease; }
-@keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-.auth-header { text-align: center; margin-bottom: 32px; }
-.auth-header .logo { width: 70px; height: 70px; border-radius: 22px;
-  display: inline-block; margin-bottom: 16px;
-  box-shadow: 0 12px 30px rgba(10,132,255,0.4); overflow: hidden; }
+#authScreen.show { display: flex; }
+.auth-header { text-align: center; margin-bottom: 30px; }
+.auth-header .logo { width: 70px; height: 70px; border-radius: 20px;
+  display: inline-block; margin-bottom: 16px; overflow: hidden;
+  box-shadow: 0 10px 25px rgba(0,149,246,0.3); }
 .auth-header .logo svg { width: 100%; height: 100%; display: block; }
-.auth-title { font-size: 26px; font-weight: 900; margin-bottom: 6px;
-  background: linear-gradient(135deg,var(--accent),#5ac8fa);
-  -webkit-background-clip: text; background-clip: text;
-  -webkit-text-fill-color: transparent; }
-.auth-sub { color: var(--subtext); font-size: 14px; line-height: 1.5; }
-.form-group { margin-bottom: 14px; width: 100%; }
-.form-group label { display: block; font-size: 12px; font-weight: 700;
-  color: var(--subtext); margin-bottom: 6px; }
-.input { width: 100%; padding: 15px 16px; background: var(--card);
-  border: 1.5px solid var(--border); border-radius: 14px;
-  color: var(--text); font-family: inherit; font-size: 14px;
-  outline: none; transition: all 0.25s; }
-.input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(10,132,255,0.12); }
-.input::placeholder { color: var(--subtext); }
+.auth-title { font-size: 24px; font-weight: 900; margin-bottom: 6px; }
+.auth-sub { color: var(--sub); font-size: 13px; line-height: 1.5; }
+.form-group { margin-bottom: 12px; width: 100%; }
+.input { width: 100%; padding: 14px 16px; background: var(--input);
+  border: 1px solid var(--border); border-radius: 10px;
+  color: var(--text); font-family: inherit; font-size: 14px; outline: none; }
+.input:focus { border-color: var(--sub); }
+.input::placeholder { color: var(--sub); }
 textarea.input { resize: none; }
-.btn-primary { width: 100%; padding: 15px;
-  background: linear-gradient(135deg,var(--accent),var(--accent2));
-  color: #fff; border: none; border-radius: 14px; font-weight: 800;
-  font-size: 15px; font-family: inherit; cursor: pointer;
-  box-shadow: 0 8px 24px rgba(10,132,255,0.4);
-  transition: transform 0.2s; margin-top: 8px; }
-.btn-primary:active { transform: scale(0.97); }
-.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
-.switch-text { text-align: center; margin-top: 20px; font-size: 13px; color: var(--subtext); }
+.btn-primary { width: 100%; padding: 13px;
+  background: var(--accent); color: #fff; border: none;
+  border-radius: 10px; font-weight: 700; font-size: 14px;
+  font-family: inherit; cursor: pointer; margin-top: 6px; }
+.btn-primary:active { opacity: 0.8; }
+.btn-primary:disabled { opacity: 0.5; }
+.btn-outline { width: 100%; padding: 13px; background: transparent;
+  color: var(--accent); border: 1px solid var(--accent);
+  border-radius: 10px; font-weight: 700; font-size: 14px;
+  font-family: inherit; cursor: pointer; }
+.switch-text { text-align: center; margin-top: 18px; font-size: 13px; color: var(--sub); }
 .switch-text button { background: none; border: none; color: var(--accent);
-  font-weight: 800; font-family: inherit; font-size: 13px;
-  cursor: pointer; text-decoration: underline; }
+  font-weight: 700; font-family: inherit; font-size: 13px; cursor: pointer; }
 
+/* APP */
 #appScreen { display: none; min-height: 100vh; }
-#appScreen.show { display: block; animation: fadeUp 0.4s ease; }
+#appScreen.show { display: block; }
 .app-header { display: flex; justify-content: space-between; align-items: center;
-  padding: 14px 20px; background: rgba(11,11,15,0.85);
-  backdrop-filter: blur(20px); position: sticky; top: 0;
+  padding: 12px 16px; background: var(--bg); position: sticky; top: 0;
   z-index: 100; border-bottom: 1px solid var(--border); }
-body.light-mode .app-header { background: rgba(242,242,247,0.85); }
-.app-logo { display: flex; align-items: center; gap: 10px;
-  font-family: 'Poppins',sans-serif; font-weight: 900; font-size: 20px; }
-.app-logo .mini { width: 32px; height: 32px; border-radius: 10px; overflow: hidden; }
+.app-logo { display: flex; align-items: center; gap: 8px;
+  font-weight: 900; font-size: 22px; letter-spacing: -0.5px; }
+.app-logo .mini { width: 28px; height: 28px; border-radius: 8px; overflow: hidden; }
 .app-logo .mini svg { width: 100%; height: 100%; display: block; }
-.app-logo span { background: linear-gradient(135deg,var(--accent),#5ac8fa);
-  -webkit-background-clip: text; background-clip: text;
-  -webkit-text-fill-color: transparent; }
-.page-title { font-size: 18px; font-weight: 900; }
-.container { padding: 8px 20px; max-width: 600px; margin: 0 auto; }
-.section-title { font-size: 13px; font-weight: 800; color: var(--subtext);
-  margin: 20px 0 12px 0; letter-spacing: 0.5px; }
-.card { display: flex; align-items: center; gap: 14px;
-  padding: 14px; background: var(--card);
-  border: 1px solid var(--border); border-radius: 18px;
-  margin-bottom: 10px; cursor: pointer; transition: all 0.25s; }
-.card:active { transform: scale(0.98); border-color: var(--accent); }
-.card-avatar { width: 52px; height: 52px; border-radius: 50%;
-  background: linear-gradient(135deg,var(--accent),var(--accent2));
+.header-actions { display: flex; gap: 18px; align-items: center; }
+.header-actions svg { width: 24px; height: 24px; stroke: var(--text);
+  fill: none; stroke-width: 1.8; cursor: pointer; }
+
+.container { max-width: 600px; margin: 0 auto; }
+.section-title { font-size: 12px; font-weight: 700; color: var(--sub);
+  padding: 16px 16px 8px 16px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* STORIES / NOTES ROW */
+.stories-row { display: flex; gap: 14px; padding: 12px 16px;
+  overflow-x: auto; border-bottom: 1px solid var(--border); }
+.stories-row::-webkit-scrollbar { display: none; }
+.story-item { display: flex; flex-direction: column; align-items: center;
+  gap: 6px; flex-shrink: 0; cursor: pointer; width: 72px; position: relative; }
+.story-avatar { width: 62px; height: 62px; border-radius: 50%;
+  background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+  padding: 2.5px; position: relative; }
+.story-avatar.no-note { background: #dbdbdb; }
+body.dark .story-avatar.no-note { background: #363636; }
+.story-avatar-inner { width: 100%; height: 100%; border-radius: 50%;
+  background: var(--bg); padding: 2px; display: flex;
+  align-items: center; justify-content: center; }
+.story-avatar-letter { width: 100%; height: 100%; border-radius: 50%;
+  background: var(--accent); color: #fff; font-weight: 900;
+  font-size: 22px; display: flex; align-items: center; justify-content: center; }
+.story-avatar.self .story-avatar-inner { background: var(--bg); position: relative; }
+.story-avatar.self .story-avatar-inner::after {
+  content: '+'; position: absolute; bottom: -2px; left: -2px;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--accent); color: #fff; font-size: 16px; font-weight: 700;
   display: flex; align-items: center; justify-content: center;
-  font-weight: 900; font-size: 20px; color: #fff; flex-shrink: 0; position: relative; }
-.card-avatar .status-dot { position: absolute; bottom: 0; right: 0;
-  width: 14px; height: 14px; border-radius: 50%; background: var(--subtext);
-  border: 2.5px solid var(--card); }
-.card-avatar .status-dot.online { background: var(--success); }
-.card-body { flex: 1; min-width: 0; }
-.card-name { font-size: 15px; font-weight: 800; margin-bottom: 3px;
+  border: 2px solid var(--bg); }
+.story-note { position: absolute; top: -14px; right: 50%;
+  transform: translateX(50%); background: #fff; color: #000;
+  padding: 3px 8px; border-radius: 10px; font-size: 10px;
+  font-weight: 600; max-width: 90px; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis; text-align: center;
+  border: 1px solid #dbdbdb; box-shadow: 0 2px 6px rgba(0,0,0,0.1); z-index: 2; }
+.story-name { font-size: 11px; color: var(--text); font-weight: 600;
+  max-width: 70px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; }
+.story-name.sub { color: var(--sub); font-weight: 400; }
+
+/* CHAT LIST */
+.chat-item { display: flex; align-items: center; gap: 12px;
+  padding: 10px 16px; cursor: pointer; }
+.chat-item:active { background: var(--card2); }
+.chat-avatar-wrap { position: relative; flex-shrink: 0; }
+.chat-avatar { width: 56px; height: 56px; border-radius: 50%;
+  background: var(--accent); color: #fff; font-weight: 900;
+  font-size: 22px; display: flex; align-items: center; justify-content: center;
+  position: relative; }
+.chat-avatar .online-dot { position: absolute; bottom: 2px; left: 2px;
+  width: 14px; height: 14px; border-radius: 50%; background: var(--sub);
+  border: 2.5px solid var(--bg); }
+.chat-avatar .online-dot.on { background: var(--success); }
+.chat-note-bubble { position: absolute; top: -18px; right: 50%;
+  transform: translateX(50%); background: #fff; color: #000;
+  padding: 4px 10px; border-radius: 12px; font-size: 10px;
+  font-weight: 600; max-width: 110px; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis; text-align: center;
+  border: 1px solid #dbdbdb; box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  z-index: 5; }
+.chat-info { flex: 1; min-width: 0; }
+.chat-name { font-size: 14px; font-weight: 700; margin-bottom: 2px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.card-username { font-size: 12px; color: var(--subtext); font-weight: 600; }
-.empty { text-align: center; color: var(--subtext);
-  padding: 60px 20px; font-size: 13px; line-height: 1.6; }
+.chat-preview { font-size: 13px; color: var(--sub);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chat-time { font-size: 11px; color: var(--sub); flex-shrink: 0; align-self: flex-start;
+  margin-top: 4px; }
 
-.search-box { position: relative; margin-bottom: 12px; }
-.search-box input { width: 100%; padding: 14px 16px 14px 44px;
-  background: var(--card); border: 1.5px solid var(--border);
-  border-radius: 14px; color: var(--text);
-  font-family: inherit; font-size: 14px; outline: none; }
-.search-box input:focus { border-color: var(--accent); }
-.search-box .search-ico { position: absolute; right: 14px; top: 50%;
-  transform: translateY(-50%); width: 18px; height: 18px;
-  stroke: var(--subtext); fill: none; stroke-width: 2.2; }
+.search-bar { margin: 8px 16px 12px 16px; padding: 10px 14px;
+  background: var(--input); border-radius: 10px;
+  display: flex; align-items: center; gap: 8px; }
+.search-bar input { flex: 1; background: none; border: none;
+  color: var(--text); font-family: inherit; font-size: 14px; outline: none; }
+.search-bar input::placeholder { color: var(--sub); }
+.search-bar svg { width: 16px; height: 16px; stroke: var(--sub); fill: none; stroke-width: 2; }
 
+.empty { text-align: center; color: var(--sub);
+  padding: 60px 24px; font-size: 13px; line-height: 1.7; }
+
+/* CHAT WINDOW */
 #chatWindow { position: fixed; inset: 0; background: var(--bg);
   z-index: 1500; display: none; flex-direction: column; }
-#chatWindow.show { display: flex; animation: slideIn 0.3s ease; }
-@keyframes slideIn { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: translateX(0); } }
+#chatWindow.show { display: flex; animation: slide 0.25s ease; }
+@keyframes slide { from { transform: translateX(-20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 .chat-header { display: flex; align-items: center; gap: 12px;
-  padding: 12px 16px; background: rgba(11,11,15,0.9);
-  backdrop-filter: blur(20px); border-bottom: 1px solid var(--border);
-  position: sticky; top: 0; z-index: 10; }
-body.light-mode .chat-header { background: rgba(242,242,247,0.9); }
-.chat-back { width: 40px; height: 40px; border-radius: 50%;
-  background: var(--card); border: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: center;
-  color: var(--text); cursor: pointer; }
-.chat-back svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2.5; }
-.chat-user { flex: 1; min-width: 0; cursor: pointer; }
-.chat-user-name { font-size: 15px; font-weight: 800; }
-.chat-user-status { font-size: 11px; color: var(--success); font-weight: 700; }
+  padding: 10px 14px; background: var(--bg); border-bottom: 1px solid var(--border); }
+.chat-back { width: 36px; height: 36px; display: flex; align-items: center;
+  justify-content: center; cursor: pointer; }
+.chat-back svg { width: 22px; height: 22px; stroke: var(--text);
+  fill: none; stroke-width: 2; }
+.chat-header-avatar { width: 36px; height: 36px; border-radius: 50%;
+  background: var(--accent); color: #fff; font-weight: 900;
+  font-size: 15px; display: flex; align-items: center; justify-content: center; }
+.chat-header-info { flex: 1; min-width: 0; }
+.chat-header-name { font-size: 14px; font-weight: 700; }
+.chat-header-status { font-size: 11px; color: var(--sub); }
+.chat-header-actions svg { width: 22px; height: 22px; stroke: var(--text);
+  fill: none; stroke-width: 1.8; }
 
-.chat-note-banner { margin: 8px 16px; padding: 10px 14px;
-  background: linear-gradient(135deg, rgba(255,159,10,0.15), rgba(255,159,10,0.08));
-  border: 1px solid rgba(255,159,10,0.3); border-radius: 12px;
-  display: flex; align-items: center; gap: 10px; cursor: pointer; }
-.chat-note-banner svg { width: 18px; height: 18px; stroke: var(--warning);
-  fill: none; stroke-width: 2.2; flex-shrink: 0; }
-.chat-note-text { font-size: 12px; color: var(--warning); font-weight: 700;
-  flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-.chat-messages { flex: 1; overflow-y: auto; padding: 20px 16px;
-  display: flex; flex-direction: column; gap: 8px; }
-.msg { max-width: 78%; padding: 10px 14px; border-radius: 18px;
-  font-size: 14px; line-height: 1.5; word-wrap: break-word;
-  animation: msgIn 0.25s ease; position: relative; }
-@keyframes msgIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-.msg.me { align-self: flex-end;
-  background: linear-gradient(135deg,var(--accent),var(--accent2));
-  color: #fff; border-bottom-right-radius: 6px; }
-.msg.other { align-self: flex-start; background: var(--card2);
-  color: var(--text); border-bottom-left-radius: 6px;
-  border: 1px solid var(--border); }
-.msg-time { font-size: 10px; opacity: 0.7; margin-top: 4px; display: block; }
-.msg-del { position: absolute; top: -8px; left: -8px;
-  width: 24px; height: 24px; border-radius: 50%;
+.chat-messages { flex: 1; overflow-y: auto; padding: 16px;
+  display: flex; flex-direction: column; gap: 6px; }
+.msg { max-width: 75%; padding: 10px 14px; border-radius: 20px;
+  font-size: 14px; line-height: 1.45; word-wrap: break-word;
+  position: relative; }
+.msg.me { align-self: flex-end; background: var(--accent); color: #fff;
+  border-bottom-left-radius: 6px; }
+.msg.other { align-self: flex-start; background: var(--input); color: var(--text);
+  border-bottom-right-radius: 6px; }
+.msg-time { font-size: 10px; opacity: 0.6; margin-top: 4px; display: block; }
+.msg-del { position: absolute; top: -6px; left: -6px;
+  width: 22px; height: 22px; border-radius: 50%;
   background: var(--danger); color: #fff; border: none;
   display: none; align-items: center; justify-content: center;
-  font-size: 12px; cursor: pointer; }
+  font-size: 11px; cursor: pointer; }
+.msg.me:hover .msg-del, .msg.me:active .msg-del { display: flex; }
 
-.chat-input { display: flex; gap: 8px; padding: 12px 16px;
-  background: rgba(11,11,15,0.9); backdrop-filter: blur(20px);
-  border-top: 1px solid var(--border); }
-body.light-mode .chat-input { background: rgba(242,242,247,0.9); }
-.chat-input input { flex: 1; padding: 14px 16px; background: var(--card);
-  border: 1.5px solid var(--border); border-radius: 24px;
-  color: var(--text); font-family: inherit; font-size: 14px; outline: none; }
-.chat-input input:focus { border-color: var(--accent); }
-.chat-send { width: 48px; height: 48px; border-radius: 50%;
-  background: linear-gradient(135deg,var(--accent),var(--accent2));
-  border: none; color: #fff; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 6px 20px rgba(10,132,255,0.4); }
-.chat-send svg { width: 20px; height: 20px; stroke: #fff; fill: none; stroke-width: 2.5; }
+.chat-input { display: flex; gap: 8px; padding: 10px 12px;
+  background: var(--bg); border-top: 1px solid var(--border); align-items: center; }
+.chat-input input { flex: 1; padding: 11px 18px; background: var(--input);
+  border: none; border-radius: 22px; color: var(--text);
+  font-family: inherit; font-size: 14px; outline: none; }
+.chat-send { width: 42px; height: 42px; border-radius: 50%;
+  background: none; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; }
+.chat-send svg { width: 26px; height: 26px; stroke: var(--accent);
+  fill: none; stroke-width: 2; }
+.chat-send:disabled svg { stroke: var(--sub); opacity: 0.4; }
 
-.profile-content { padding: 24px 20px 40px 20px; max-width: 500px; margin: 0 auto; width: 100%; }
-.profile-big-avatar { width: 110px; height: 110px; border-radius: 50%;
-  background: linear-gradient(135deg,var(--accent),var(--accent2));
-  display: flex; align-items: center; justify-content: center;
-  font-weight: 900; font-size: 44px; color: #fff;
-  margin: 0 auto 16px auto;
-  box-shadow: 0 12px 30px rgba(10,132,255,0.4); }
-.profile-display-name { font-size: 22px; font-weight: 900; text-align: center; margin-bottom: 4px; }
-.profile-username { font-size: 14px; color: var(--subtext); text-align: center; margin-bottom: 6px; }
-.profile-bio { font-size: 13px; color: var(--subtext); text-align: center; margin-bottom: 20px; line-height: 1.5; }
-.profile-edit-btn { display: block; margin: 0 auto 28px auto;
-  padding: 10px 24px; border-radius: 12px;
-  background: var(--card); border: 1.5px solid var(--accent);
-  color: var(--accent); font-weight: 800; font-family: inherit;
-  font-size: 13px; cursor: pointer; }
-.settings-group { background: var(--card); border: 1px solid var(--border);
-  border-radius: 18px; overflow: hidden; margin-bottom: 16px; }
-.settings-group-title { font-size: 11px; font-weight: 800;
-  color: var(--subtext); padding: 14px 18px 8px 18px;
-  letter-spacing: 1px; text-transform: uppercase; }
-.setting-row { display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 18px; border-top: 1px solid var(--border);
-  cursor: pointer; }
-.setting-row-left { display: flex; align-items: center; gap: 12px; }
-.setting-row-icon { width: 34px; height: 34px; border-radius: 10px;
-  background: rgba(10,132,255,0.12); display: flex;
-  align-items: center; justify-content: center; flex-shrink: 0; }
-.setting-row-icon svg { width: 17px; height: 17px; stroke: var(--accent);
-  fill: none; stroke-width: 2.2; }
-.setting-row-label { font-size: 14px; font-weight: 700; }
-.setting-row-value { font-size: 13px; color: var(--subtext); }
-.setting-row.danger .setting-row-icon { background: rgba(255,69,58,0.12); }
-.setting-row.danger .setting-row-icon svg { stroke: var(--danger); }
-.setting-row.danger .setting-row-label { color: var(--danger); }
-.setting-toggle { width: 46px; height: 26px; border-radius: 13px;
-  background: var(--border); position: relative; transition: background 0.3s; cursor: pointer; }
-.setting-toggle.on { background: var(--accent); }
-.setting-toggle::after { content: ''; position: absolute; top: 3px; right: 3px;
-  width: 20px; height: 20px; border-radius: 50%;
-  background: #fff; transition: transform 0.3s; }
-.setting-toggle.on::after { transform: translateX(-20px); }
+/* BOTTOM NAV */
+.bottom-bar { position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--bg); border-top: 1px solid var(--border);
+  display: flex; justify-content: space-around; align-items: center;
+  padding: 8px 0 max(8px, env(safe-area-inset-bottom)) 0; z-index: 1000; }
+.bottom-bar.hidden { display: none; }
+.nav-btn { display: flex; flex-direction: column; align-items: center;
+  gap: 2px; background: none; border: none; color: var(--sub);
+  font-family: inherit; font-size: 9px; font-weight: 600;
+  cursor: pointer; padding: 4px 8px; flex: 1; }
+.nav-btn svg { width: 24px; height: 24px; stroke: currentColor;
+  fill: none; stroke-width: 1.8; }
+.nav-btn.active { color: var(--text); }
+.nav-btn.active svg { stroke: var(--text); }
 
-.bottom-bar { position: fixed; bottom: 14px; left: 50%;
-  transform: translateX(-50%); width: 94%; max-width: 520px;
-  z-index: 1000; display: flex; align-items: center; gap: 8px; justify-content: center; }
-.bottom-nav { flex: 1; display: flex; justify-content: space-around;
-  align-items: center; padding: 10px 4px;
-  background: rgba(20,20,26,0.92); backdrop-filter: blur(30px);
-  border: 1px solid var(--border); border-radius: 30px;
-  box-shadow: 0 15px 40px rgba(0,0,0,0.5); }
-body.light-mode .bottom-nav { background: rgba(255,255,255,0.95); }
-.nav-btn { flex: 1; display: flex; flex-direction: column;
-  align-items: center; justify-content: center; gap: 3px;
-  background: none; border: none; color: var(--subtext);
-  font-family: inherit; font-size: 10px; font-weight: 800;
-  cursor: pointer; padding: 6px 4px; border-radius: 14px; }
-.nav-btn svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; }
-.nav-btn.active { color: var(--accent); }
-.nav-btn.active svg { stroke: var(--accent); }
-.search-fab { width: 56px; height: 56px; border-radius: 50%;
-  background: rgba(20,20,26,0.92); backdrop-filter: blur(30px);
-  border: 1px solid var(--border); color: var(--text);
-  cursor: pointer; display: flex; align-items: center;
-  justify-content: center; flex-shrink: 0;
-  box-shadow: 0 15px 40px rgba(0,0,0,0.5); }
-body.light-mode .search-fab { background: rgba(255,255,255,0.95); }
-.search-fab svg { width: 22px; height: 22px; stroke: var(--text); fill: none; stroke-width: 2.2; }
-
-.post-card { background: var(--card); border: 1px solid var(--border);
-  border-radius: 18px; padding: 16px; margin-bottom: 12px; }
-.post-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-.post-avatar { width: 40px; height: 40px; border-radius: 50%;
-  background: linear-gradient(135deg,var(--accent),var(--accent2));
-  display: flex; align-items: center; justify-content: center;
-  font-weight: 900; font-size: 16px; color: #fff; flex-shrink: 0; }
-.post-info { flex: 1; min-width: 0; }
-.post-name { font-size: 14px; font-weight: 800; }
-.post-time { font-size: 11px; color: var(--subtext); font-weight: 600; }
-.post-text { font-size: 14px; line-height: 1.6; margin-bottom: 10px; word-wrap: break-word; }
-.post-image { width: 100%; border-radius: 14px; max-height: 400px; object-fit: cover; margin-bottom: 10px; }
-.post-actions { display: flex; justify-content: flex-end; gap: 8px; }
-.post-del { background: rgba(255,69,58,0.1); color: var(--danger);
-  border: 1px solid rgba(255,69,58,0.3); padding: 6px 12px;
-  border-radius: 10px; font-size: 11px; font-weight: 800;
-  cursor: pointer; font-family: inherit; }
-
-.fab-create { position: fixed; right: 20px; bottom: 90px;
-  width: 56px; height: 56px; border-radius: 50%;
-  background: linear-gradient(135deg,var(--accent),var(--accent2));
-  border: none; color: #fff; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 10px 30px rgba(10,132,255,0.5); z-index: 999; }
-.fab-create svg { width: 24px; height: 24px; stroke: #fff; fill: none; stroke-width: 2.5; }
-
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7);
-  backdrop-filter: blur(6px); z-index: 2000;
-  display: none; align-items: center; justify-content: center; padding: 20px; }
-.modal-overlay.show { display: flex; }
-.modal-card { background: var(--card); border: 1px solid var(--border);
-  border-radius: 24px; padding: 24px 22px; width: 100%;
-  max-width: 400px; max-height: 90vh; overflow-y: auto; position: relative; }
-.modal-card h3 { font-size: 18px; font-weight: 900; margin-bottom: 20px; text-align: center; }
-.modal-btn-row { display: flex; gap: 8px; margin-top: 8px; }
-.modal-btn-row .btn-primary { flex: 1; }
-.btn-secondary-modal { flex: 1; padding: 15px; background: var(--card2);
-  color: var(--text); border: 1px solid var(--border);
-  border-radius: 14px; font-weight: 800; font-size: 15px;
+/* PROFILE */
+.profile-header { display: flex; align-items: center; gap: 20px;
+  padding: 24px 16px 16px 16px; }
+.profile-pic { width: 86px; height: 86px; border-radius: 50%;
+  background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+  padding: 3px; flex-shrink: 0; }
+.profile-pic-inner { width: 100%; height: 100%; border-radius: 50%;
+  background: var(--bg); display: flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: 32px; color: var(--accent); }
+.profile-stats { display: flex; gap: 24px; flex: 1; justify-content: space-around; }
+.profile-stat { text-align: center; }
+.profile-stat-num { font-size: 16px; font-weight: 700; }
+.profile-stat-label { font-size: 12px; color: var(--sub); }
+.profile-name { font-size: 15px; font-weight: 700;
+  padding: 0 16px 4px 16px; }
+.profile-bio { font-size: 13px; color: var(--sub);
+  padding: 0 16px 16px 16px; line-height: 1.5; }
+.profile-actions { display: flex; gap: 8px; padding: 0 16px 16px 16px; }
+.profile-actions button { flex: 1; padding: 8px;
+  background: var(--input); color: var(--text); border: none;
+  border-radius: 8px; font-weight: 700; font-size: 13px;
   font-family: inherit; cursor: pointer; }
 
-#toast { position: fixed; top: 20px; left: 50%;
-  transform: translateX(-50%) translateY(-100px);
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: 14px; padding: 14px 22px; font-size: 13px;
-  font-weight: 700; z-index: 10000; transition: transform 0.3s ease;
-  max-width: 90%; text-align: center; }
-#toast.show { transform: translateX(-50%) translateY(0); }
-#toast.success { border-color: var(--success); color: var(--success); }
-#toast.error { border-color: var(--danger); color: var(--danger); }
+.settings-list { border-top: 1px solid var(--border); }
+.setting-item { display: flex; align-items: center; gap: 12px;
+  padding: 14px 16px; border-bottom: 1px solid var(--border);
+  cursor: pointer; background: var(--bg); }
+.setting-item:active { background: var(--card2); }
+.setting-item svg { width: 20px; height: 20px;
+  stroke: var(--text); fill: none; stroke-width: 1.8; }
+.setting-item-label { flex: 1; font-size: 14px; font-weight: 500; }
+.setting-item-value { font-size: 13px; color: var(--sub); }
+.setting-item.danger .setting-item-label { color: var(--danger); }
+.setting-item.danger svg { stroke: var(--danger); }
 
-.loader-dots { display: flex; gap: 6px; justify-content: center; padding: 20px; }
-.loader-dots span { width: 8px; height: 8px; border-radius: 50%;
-  background: var(--accent); animation: dotPulse 1.4s infinite; }
-.loader-dots span:nth-child(2) { animation-delay: 0.2s; background: #ff453a; }
-.loader-dots span:nth-child(3) { animation-delay: 0.4s; background: #ff9f0a; }
-@keyframes dotPulse { 0%,100% { opacity: 0.4; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1.2); } }
+/* POSTS */
+.post-card { padding: 12px 0; border-bottom: 1px solid var(--border); }
+.post-head { display: flex; align-items: center; gap: 10px; padding: 0 16px 10px 16px; }
+.post-avatar { width: 34px; height: 34px; border-radius: 50%;
+  background: var(--accent); color: #fff; font-weight: 900;
+  font-size: 14px; display: flex; align-items: center; justify-content: center; }
+.post-info { flex: 1; }
+.post-name { font-size: 13px; font-weight: 700; }
+.post-time { font-size: 11px; color: var(--sub); }
+.post-image { width: 100%; max-height: 500px; object-fit: cover; }
+.post-text { padding: 10px 16px 4px 16px; font-size: 14px; line-height: 1.5; }
+.post-actions { padding: 8px 16px; display: flex; gap: 12px; align-items: center; }
+.post-actions svg { width: 22px; height: 22px; stroke: var(--text);
+  fill: none; stroke-width: 1.8; cursor: pointer; }
+.post-del { margin-right: auto; background: none; border: none;
+  color: var(--sub); font-size: 12px; cursor: pointer;
+  font-family: inherit; }
 
-.lang-row { display: flex; gap: 8px; }
-.lang-opt { flex: 1; padding: 12px; border-radius: 12px;
-  background: var(--card2); border: 1.5px solid var(--border);
-  color: var(--text); font-family: inherit; font-weight: 800;
-  font-size: 13px; cursor: pointer; }
-.lang-opt.active { background: linear-gradient(135deg,var(--accent),var(--accent2));
-  border-color: transparent; color: #fff; }
+/* MODAL */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+  z-index: 2000; display: none; align-items: flex-end; justify-content: center;
+  padding: 0; }
+.modal-overlay.show { display: flex; animation: fade 0.2s; }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+.modal-card { background: var(--bg); border-radius: 16px 16px 0 0;
+  padding: 20px; width: 100%; max-width: 500px;
+  max-height: 90vh; overflow-y: auto;
+  animation: slideUp 0.25s ease; }
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.modal-title { font-size: 16px; font-weight: 700;
+  text-align: center; margin-bottom: 16px; }
+.modal-btn-row { display: flex; gap: 8px; margin-top: 10px; }
+.modal-btn-row button { flex: 1; padding: 12px; border-radius: 10px;
+  font-weight: 700; font-family: inherit; font-size: 14px; cursor: pointer; }
+.modal-btn-primary { background: var(--accent); color: #fff; border: none; }
+.modal-btn-secondary { background: var(--input); color: var(--text); border: none; }
+.modal-btn-danger { background: rgba(237,73,86,0.1); color: var(--danger); border: none; }
+
+/* NOTE BUBBLE INPUT */
+.note-input-wrap { text-align: center; margin-bottom: 20px; }
+.note-input { width: 100%; padding: 14px;
+  background: var(--input); border: none; border-radius: 12px;
+  color: var(--text); font-family: inherit; font-size: 14px; outline: none;
+  text-align: center; }
+
+/* TOAST */
+#toast { position: fixed; bottom: 90px; left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: #262626; color: #fff; padding: 12px 20px;
+  border-radius: 24px; font-size: 13px; font-weight: 600;
+  z-index: 10000; opacity: 0; pointer-events: none;
+  transition: all 0.3s; max-width: 90%; text-align: center; }
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+#toast.error { background: var(--danger); }
+
+/* LOADER */
+.loader { display: flex; justify-content: center; padding: 40px; }
+.loader::after { content: ''; width: 28px; height: 28px;
+  border: 3px solid var(--border); border-top-color: var(--accent);
+  border-radius: 50%; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* FAB */
+.fab { position: fixed; bottom: 80px; left: 20px;
+  width: 52px; height: 52px; border-radius: 50%;
+  background: var(--accent); border: none; color: #fff;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 16px rgba(0,149,246,0.4); z-index: 999; }
+.fab svg { width: 26px; height: 26px; stroke: #fff; fill: none; stroke-width: 2.5; }
 </style>
 </head>
 <body>
 
 <div id="splash">
   <div class="splash-logo">
-    <svg viewBox="0 0 100 100"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0a84ff"/><stop offset="1" stop-color="#0062d2"/></linearGradient></defs><rect width="100" height="100" rx="22" fill="url(#g)"/><path d="M50 25c-13.8 0-25 9.8-25 22 0 7.2 3.8 13.6 9.8 17.6-.6 3.4-2.6 6.4-5.6 8.4 4.6-.6 8.8-2.6 11.8-5.6 2.8.8 5.8 1.2 9 1.2 13.8 0 25-9.8 25-22S63.8 25 50 25z" fill="#fff"/></svg>
+    <svg viewBox="0 0 100 100"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f09433"/><stop offset="0.5" stop-color="#dc2743"/><stop offset="1" stop-color="#bc1888"/></linearGradient></defs><rect width="100" height="100" rx="22" fill="url(#g)"/><path d="M50 25c-13.8 0-25 9.8-25 22 0 7.2 3.8 13.6 9.8 17.6-.6 3.4-2.6 6.4-5.6 8.4 4.6-.6 8.8-2.6 11.8-5.6 2.8.8 5.8 1.2 9 1.2 13.8 0 25-9.8 25-22S63.8 25 50 25z" fill="#fff"/></svg>
   </div>
   <div class="splash-title">iNetchat</div>
 </div>
@@ -333,16 +343,16 @@ body.light-mode .search-fab { background: rgba(255,255,255,0.95); }
 <div id="authScreen">
   <div class="auth-header">
     <div class="logo">
-      <svg viewBox="0 0 100 100"><defs><linearGradient id="g2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0a84ff"/><stop offset="1" stop-color="#0062d2"/></linearGradient></defs><rect width="100" height="100" rx="22" fill="url(#g2)"/><path d="M50 25c-13.8 0-25 9.8-25 22 0 7.2 3.8 13.6 9.8 17.6-.6 3.4-2.6 6.4-5.6 8.4 4.6-.6 8.8-2.6 11.8-5.6 2.8.8 5.8 1.2 9 1.2 13.8 0 25-9.8 25-22S63.8 25 50 25z" fill="#fff"/></svg>
+      <svg viewBox="0 0 100 100"><defs><linearGradient id="g2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f09433"/><stop offset="0.5" stop-color="#dc2743"/><stop offset="1" stop-color="#bc1888"/></linearGradient></defs><rect width="100" height="100" rx="22" fill="url(#g2)"/><path d="M50 25c-13.8 0-25 9.8-25 22 0 7.2 3.8 13.6 9.8 17.6-.6 3.4-2.6 6.4-5.6 8.4 4.6-.6 8.8-2.6 11.8-5.6 2.8.8 5.8 1.2 9 1.2 13.8 0 25-9.8 25-22S63.8 25 50 25z" fill="#fff"/></svg>
     </div>
     <h1 class="auth-title" id="authTitle">تسجيل الدخول</h1>
     <p class="auth-sub" id="authSub">مرحباً بعودتك! سجل دخولك للمتابعة.</p>
   </div>
   <form id="authForm" onsubmit="handleAuth(event)" style="width:100%">
-    <div class="form-group" id="usernameGroup" style="display:none;"><label>اسم المستخدم</label><input type="text" id="username" class="input" placeholder="ahmed_dz"></div>
-    <div class="form-group" id="displayNameGroup" style="display:none;"><label>الاسم الكامل</label><input type="text" id="displayName" class="input" placeholder="أحمد"></div>
-    <div class="form-group"><label>البريد الإلكتروني</label><input type="email" id="email" class="input" placeholder="example@gmail.com" required></div>
-    <div class="form-group"><label>كلمة المرور</label><input type="password" id="password" class="input" placeholder="6 أحرف على الأقل" required></div>
+    <div class="form-group" id="usernameGroup" style="display:none;"><input type="text" id="username" class="input" placeholder="اسم المستخدم"></div>
+    <div class="form-group" id="displayNameGroup" style="display:none;"><input type="text" id="displayName" class="input" placeholder="الاسم الكامل"></div>
+    <div class="form-group"><input type="email" id="email" class="input" placeholder="البريد الإلكتروني" required></div>
+    <div class="form-group"><input type="password" id="password" class="input" placeholder="كلمة المرور (6+)" required></div>
     <button type="submit" class="btn-primary" id="submitBtn">تسجيل الدخول</button>
   </form>
   <div class="switch-text"><span id="switchText">ليس لديك حساب؟</span> <button onclick="toggleAuthMode()" id="switchBtn">أنشئ حساب</button></div>
@@ -351,102 +361,113 @@ body.light-mode .search-fab { background: rgba(255,255,255,0.95); }
 <div id="appScreen">
   <div class="app-header">
     <div class="app-logo">
-      <div class="mini"><svg viewBox="0 0 100 100"><defs><linearGradient id="g3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0a84ff"/><stop offset="1" stop-color="#0062d2"/></linearGradient></defs><rect width="100" height="100" rx="22" fill="url(#g3)"/><path d="M50 25c-13.8 0-25 9.8-25 22 0 7.2 3.8 13.6 9.8 17.6-.6 3.4-2.6 6.4-5.6 8.4 4.6-.6 8.8-2.6 11.8-5.6 2.8.8 5.8 1.2 9 1.2 13.8 0 25-9.8 25-22S63.8 25 50 25z" fill="#fff"/></svg></div>
-      <span>iNetchat</span>
+      <div class="mini"><svg viewBox="0 0 100 100"><defs><linearGradient id="g3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f09433"/><stop offset="0.5" stop-color="#dc2743"/><stop offset="1" stop-color="#bc1888"/></linearGradient></defs><rect width="100" height="100" rx="22" fill="url(#g3)"/><path d="M50 25c-13.8 0-25 9.8-25 22 0 7.2 3.8 13.6 9.8 17.6-.6 3.4-2.6 6.4-5.6 8.4 4.6-.6 8.8-2.6 11.8-5.6 2.8.8 5.8 1.2 9 1.2 13.8 0 25-9.8 25-22S63.8 25 50 25z" fill="#fff"/></svg></div>
+      <span id="pageTitle">iNetchat</span>
     </div>
-    <div class="page-title" id="pageTitle">المحادثات</div>
+    <div class="header-actions">
+      <svg viewBox="0 0 24 24" onclick="switchMainTab('search')"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <svg viewBox="0 0 24 24" onclick="logout()"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    </div>
   </div>
   <div class="container" id="mainContainer"></div>
-  <button class="fab-create" id="fabCreate" onclick="openCreatePost()" style="display:none;">
+  <button class="fab" id="fabCreate" onclick="openCreatePost()" style="display:none;">
     <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
   </button>
 </div>
 
-<div class="bottom-bar" id="bottomBar" style="display:none;">
-  <div class="bottom-nav">
-    <button class="nav-btn" data-tab="contacts" onclick="switchMainTab('contacts')">
-      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      <span>جهات الاتصال</span>
-    </button>
-    <button class="nav-btn active" data-tab="chats" onclick="switchMainTab('chats')">
-      <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-      <span>المحادثات</span>
-    </button>
-    <button class="nav-btn" data-tab="posts" onclick="switchMainTab('posts')">
-      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-      <span>تغريدة</span>
-    </button>
-    <button class="nav-btn" data-tab="settings" onclick="switchMainTab('settings')">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-      <span>الإعدادات</span>
-    </button>
-  </div>
-  <button class="search-fab" onclick="switchMainTab('search')">
+<div class="bottom-bar hidden" id="bottomBar">
+  <button class="nav-btn" data-tab="posts" onclick="switchMainTab('posts')">
+    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+    <span>الرئيسية</span>
+  </button>
+  <button class="nav-btn" data-tab="search" onclick="switchMainTab('search')">
     <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <span>بحث</span>
+  </button>
+  <button class="nav-btn active" data-tab="chats" onclick="switchMainTab('chats')">
+    <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    <span>المحادثات</span>
+  </button>
+  <button class="nav-btn" data-tab="settings" onclick="switchMainTab('settings')">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"/><path d="M4 21v-2a6 6 0 0 1 12 0v2"/></svg>
+    <span>حسابي</span>
   </button>
 </div>
 
 <div id="chatWindow">
   <div class="chat-header">
     <div class="chat-back" onclick="closeChat()"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
-    <div class="chat-user" onclick="openUserProfile(currentChatUser)">
-      <div class="chat-user-name" id="chatUserName">—</div>
-      <div class="chat-user-status" id="chatUserStatus">● متصل</div>
+    <div class="chat-header-avatar" id="chatHeaderAvatar">A</div>
+    <div class="chat-header-info" onclick="openUserProfile(currentChatUser)">
+      <div class="chat-header-name" id="chatUserName">—</div>
+      <div class="chat-header-status" id="chatUserStatus">● متصل</div>
     </div>
   </div>
-  <div id="chatNoteBanner"></div>
   <div class="chat-messages" id="chatMessages"></div>
   <div class="chat-input">
     <input type="text" id="msgInput" placeholder="اكتب رسالة..." onkeypress="if(event.key==='Enter') sendMessage()">
-    <button class="chat-send" onclick="sendMessage()"><svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+    <button class="chat-send" id="sendBtn" onclick="sendMessage()"><svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
   </div>
 </div>
 
-<div class="modal-overlay" id="editModal">
-  <div class="modal-card">
-    <h3>تعديل البروفايل</h3>
-    <div class="form-group"><label>الاسم الكامل</label><input type="text" id="editDisplayName" class="input"></div>
-    <div class="form-group"><label>البايو</label><input type="text" id="editBio" class="input" placeholder="جملة قصيرة عنك..."></div>
-    <div class="modal-btn-row">
-      <button class="btn-primary" onclick="saveProfile()">حفظ</button>
-      <button class="btn-secondary-modal" onclick="closeEditModal()">إلغاء</button>
-    </div>
-  </div>
-</div>
-
+<!-- Note Modal -->
 <div class="modal-overlay" id="noteModal">
   <div class="modal-card">
-    <h3>📝 نوت المحادثة</h3>
-    <div class="form-group"><textarea id="noteContent" class="input" style="height:100px" placeholder="اكتب النوت هنا..."></textarea></div>
-    <div class="modal-btn-row">
-      <button class="btn-primary" onclick="saveNote()">حفظ</button>
-      <button class="btn-secondary-modal" onclick="deleteNote()">حذف</button>
+    <div class="modal-title">📝 نوتتك</div>
+    <p style="color:var(--sub);font-size:12px;text-align:center;margin-bottom:14px;">اكتب نوت قصيرة (60 حرف) تظهر فوق صورتك</p>
+    <div class="note-input-wrap">
+      <input type="text" id="noteContent" class="note-input" maxlength="60" placeholder="واش راك حاب تقول؟">
     </div>
-    <button class="btn-secondary-modal" style="width:100%;margin-top:8px;" onclick="closeNoteModal()">إلغاء</button>
+    <div class="modal-btn-row">
+      <button class="modal-btn-primary" onclick="saveNote()">حفظ</button>
+      <button class="modal-btn-secondary" onclick="closeNoteModal()">إلغاء</button>
+    </div>
+    <div class="modal-btn-row">
+      <button class="modal-btn-danger" onclick="deleteMyNote()">حذف النوت</button>
+    </div>
   </div>
 </div>
 
+<!-- Edit Profile Modal -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal-card">
+    <div class="modal-title">تعديل البروفايل</div>
+    <div class="form-group"><input type="text" id="editDisplayName" class="input" placeholder="الاسم الكامل"></div>
+    <div class="form-group"><textarea id="editBio" class="input" style="height:80px" placeholder="البايو"></textarea></div>
+    <div class="modal-btn-row">
+      <button class="modal-btn-primary" onclick="saveProfile()">حفظ</button>
+      <button class="modal-btn-secondary" onclick="closeEditModal()">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- Post Modal -->
 <div class="modal-overlay" id="postModal">
   <div class="modal-card">
-    <h3>✍️ تغريدة جديدة</h3>
-    <div class="form-group"><textarea id="postContent" class="input" style="height:120px" placeholder="واش راك حاب تقول؟"></textarea></div>
+    <div class="modal-title">✍️ منشور جديد</div>
+    <div class="form-group"><textarea id="postContent" class="input" style="height:100px" placeholder="واش راك حاب تقول؟"></textarea></div>
     <div class="form-group"><input type="text" id="postImage" class="input" placeholder="رابط صورة (اختياري)"></div>
     <div class="modal-btn-row">
-      <button class="btn-primary" onclick="publishPost()">نشر</button>
-      <button class="btn-secondary-modal" onclick="closePostModal()">إلغاء</button>
+      <button class="modal-btn-primary" onclick="publishPost()">نشر</button>
+      <button class="modal-btn-secondary" onclick="closePostModal()">إلغاء</button>
     </div>
   </div>
 </div>
 
+<!-- User Profile Modal -->
 <div class="modal-overlay" id="userProfileModal">
   <div class="modal-card">
-    <button class="btn-secondary-modal" style="position:absolute;top:14px;left:14px;width:36px;height:36px;padding:0;border-radius:50%;" onclick="closeUserProfile()">✕</button>
-    <div style="text-align:center;padding-top:10px;">
-      <div class="profile-big-avatar" id="upAvatar" style="width:90px;height:90px;font-size:34px;">?</div>
-      <div class="profile-display-name" id="upName" style="font-size:20px;">—</div>
-      <div class="profile-username" id="upUsername">@—</div>
-      <div class="profile-bio" id="upBio" style="margin-bottom:18px;"></div>
-      <button class="btn-primary" onclick="startChatFromProfile()">💬 ابدأ محادثة</button>
+    <div style="text-align:center;">
+      <div class="profile-pic" style="margin:0 auto 12px auto;">
+        <div class="profile-pic-inner" id="upAvatar">?</div>
+      </div>
+      <div style="font-size:18px;font-weight:700;" id="upName">—</div>
+      <div style="font-size:13px;color:var(--sub);margin-bottom:8px;" id="upUsername">@—</div>
+      <div style="font-size:13px;color:var(--sub);margin-bottom:16px;line-height:1.5;" id="upBio"></div>
+      <div class="modal-btn-row">
+        <button class="modal-btn-primary" onclick="startChatFromProfile()">💬 ابدأ محادثة</button>
+        <button class="modal-btn-secondary" onclick="closeUserProfile()">إغلاق</button>
+      </div>
     </div>
   </div>
 </div>
@@ -454,10 +475,12 @@ body.light-mode .search-fab { background: rgba(255,255,255,0.95); }
 <div id="toast"></div>
 
 <script>
+/* ============ CONFIG ============ */
 const SUPABASE_URL = 'https://qmgxrnyouzanulvmpizb.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_TmPuK2aXlav91I5mA91FXw_LdgECvHf';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+/* ============ STATE ============ */
 let authMode = 'login';
 let currentUser = null;
 let currentProfile = null;
@@ -466,47 +489,34 @@ let currentChatUser = null;
 let msgPolling = null;
 let profileData = null;
 let currentTab = 'chats';
-let currentLang = 'ar';
 let viewingProfile = null;
 let lastMsgCount = 0;
 
-const T = {
-  ar: { chats: 'المحادثات', contacts: 'جهات الاتصال', posts: 'تغريدة', settings: 'الإعدادات', search: 'البحث',
-    login: 'تسجيل الدخول', signup: 'إنشاء حساب', welcomeSub: 'سجل دخولك للمتابعة.',
-    signupSub: 'انضم إلينا وابدأ الدردشة.', noAccount: 'ليس لديك حساب؟', haveAccount: 'لديك حساب؟',
-    createOne: 'أنشئ حساب', signIn: 'سجّل دخول', online: '● متصل', logout: 'تسجيل الخروج',
-    editProfile: 'تعديل الاسم والبائو', privateAccount: 'حساب خاص', darkMode: 'الوضع الليلي',
-    notifications: 'الإشعارات', blocked: 'الحسابات المحظورة', language: 'اللغة', upcoming: 'قريباً!' },
-  en: { chats: 'Chats', contacts: 'Contacts', posts: 'Posts', settings: 'Settings', search: 'Search',
-    login: 'Sign In', signup: 'Sign Up', welcomeSub: 'Sign in to continue.',
-    signupSub: 'Join us and start chatting.', noAccount: "Don't have an account?", haveAccount: 'Have an account?',
-    createOne: 'Create one', signIn: 'Sign in', online: '● Online', logout: 'Logout',
-    editProfile: 'Edit name & bio', privateAccount: 'Private account', darkMode: 'Dark mode',
-    notifications: 'Notifications', blocked: 'Blocked accounts', language: 'Language', upcoming: 'Coming soon!' }
-};
-function t(k) { return T[currentLang][k] || k; }
-
+/* ============ HELPERS ============ */
 async function hashPass(s) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
 }
-
+function esc(s) {
+  return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function isOnline(u) {
+  return u.last_seen && (Date.now() - new Date(u.last_seen).getTime()) < 5*60*1000;
+}
 async function touchLastSeen() {
   if (!currentUser) return;
   try { await sb.from('profiles').update({ last_seen: new Date().toISOString() }).eq('id', currentUser.id); } catch(e){}
 }
 
+/* ============ INIT ============ */
 setTimeout(async () => {
   document.getElementById('splash').classList.add('hide');
-  const savedLang = localStorage.getItem('inet_lang');
-  if (savedLang) currentLang = savedLang;
-  if (localStorage.getItem('inet_dark') === 'off') document.body.classList.add('light-mode');
+  if (localStorage.getItem('inet_dark') === 'on') document.body.classList.add('dark');
   const saved = localStorage.getItem('inet_user');
   if (saved) {
     try {
       const u = JSON.parse(saved);
-      currentUser = u.user;
-      currentProfile = u.profile;
+      currentUser = u.user; currentProfile = u.profile;
       showApp();
       touchLastSeen();
       setInterval(touchLastSeen, 60000);
@@ -514,26 +524,19 @@ setTimeout(async () => {
     } catch(e){}
   }
   document.getElementById('authScreen').classList.add('show');
-}, 2200);
+}, 1800);
 
+/* ============ AUTH ============ */
 function toggleAuthMode() {
   authMode = authMode === 'login' ? 'signup' : 'login';
-  const t1 = document.getElementById('authTitle');
-  const s = document.getElementById('authSub');
-  const b = document.getElementById('submitBtn');
-  const sw = document.getElementById('switchText');
-  const sb2 = document.getElementById('switchBtn');
-  const ug = document.getElementById('usernameGroup');
-  const dg = document.getElementById('displayNameGroup');
-  if (authMode === 'signup') {
-    t1.innerText = t('signup'); s.innerText = t('signupSub'); b.innerText = t('signup');
-    sw.innerText = t('haveAccount'); sb2.innerText = t('signIn');
-    ug.style.display = 'block'; dg.style.display = 'block';
-  } else {
-    t1.innerText = t('login'); s.innerText = t('welcomeSub'); b.innerText = t('login');
-    sw.innerText = t('noAccount'); sb2.innerText = t('createOne');
-    ug.style.display = 'none'; dg.style.display = 'none';
-  }
+  const s = authMode === 'signup';
+  document.getElementById('authTitle').innerText = s ? 'إنشاء حساب' : 'تسجيل الدخول';
+  document.getElementById('authSub').innerText = s ? 'انضم إلينا و ابدأ الدردشة.' : 'مرحباً بعودتك!';
+  document.getElementById('submitBtn').innerText = s ? 'إنشاء حساب' : 'تسجيل الدخول';
+  document.getElementById('switchText').innerText = s ? 'لديك حساب؟' : 'ليس لديك حساب؟';
+  document.getElementById('switchBtn').innerText = s ? 'سجل دخول' : 'أنشئ حساب';
+  document.getElementById('usernameGroup').style.display = s ? 'block' : 'none';
+  document.getElementById('displayNameGroup').style.display = s ? 'block' : 'none';
 }
 
 async function handleAuth(e) {
@@ -546,20 +549,20 @@ async function handleAuth(e) {
     if (authMode === 'signup') {
       const username = document.getElementById('username').value.trim().toLowerCase();
       const display_name = document.getElementById('displayName').value.trim();
-      if (!username) throw new Error('Username required');
-      if (password.length < 6) throw new Error('Password too short');
-      const { data: existingEmail } = await sb.from('profiles').select('id').eq('email', email).maybeSingle();
-      if (existingEmail) throw new Error('Email taken');
-      const { data: existingUser } = await sb.from('profiles').select('id').eq('username', username).maybeSingle();
-      if (existingUser) throw new Error('Username taken');
+      if (!username) throw new Error('اسم المستخدم مطلوب');
+      if (password.length < 6) throw new Error('كلمة المرور قصيرة');
+      const { data: e1 } = await sb.from('profiles').select('id').eq('email', email).maybeSingle();
+      if (e1) throw new Error('البريد مستخدم');
+      const { data: e2 } = await sb.from('profiles').select('id').eq('username', username).maybeSingle();
+      if (e2) throw new Error('اسم المستخدم محجوز');
       const hashed = await hashPass(password);
       const { data, error } = await sb.from('profiles').insert({ email, username, display_name, password: hashed }).select().single();
       if (error) throw error;
       currentUser = { id: data.id, email: data.email };
       currentProfile = data;
       localStorage.setItem('inet_user', JSON.stringify({ user: currentUser, profile: currentProfile }));
-      showToast('✓ تم إنشاء الحساب', 'success');
-      setTimeout(showApp, 400);
+      toast('✓ تم إنشاء الحساب');
+      setTimeout(showApp, 300);
     } else {
       const hashed = await hashPass(password);
       const { data, error } = await sb.from('profiles').select().eq('email', email).eq('password', hashed).maybeSingle();
@@ -568,138 +571,160 @@ async function handleAuth(e) {
       currentUser = { id: data.id, email: data.email };
       currentProfile = data;
       localStorage.setItem('inet_user', JSON.stringify({ user: currentUser, profile: currentProfile }));
-      showToast('✓', 'success');
-      setTimeout(showApp, 400);
+      toast('✓');
+      setTimeout(showApp, 300);
     }
-  } catch (err) { showToast(err.message || 'Error', 'error'); }
+  } catch (err) { toast(err.message || 'Error', 'error'); }
   finally { btn.disabled = false; btn.innerText = old; }
 }
 
 function showApp() {
   document.getElementById('authScreen').classList.remove('show');
   document.getElementById('appScreen').classList.add('show');
-  document.getElementById('bottomBar').style.display = 'flex';
+  document.getElementById('bottomBar').classList.remove('hidden');
   switchMainTab('chats');
   touchLastSeen();
 }
 
 function logout() {
+  if (!confirm('تسجيل الخروج؟')) return;
   localStorage.removeItem('inet_user');
   currentUser = null; currentProfile = null;
   if (msgPolling) clearInterval(msgPolling);
   document.getElementById('appScreen').classList.remove('show');
   document.getElementById('chatWindow').classList.remove('show');
-  document.getElementById('bottomBar').style.display = 'none';
+  document.getElementById('bottomBar').classList.add('hidden');
   document.getElementById('authScreen').classList.add('show');
-  showToast('Bye 👋', 'success');
 }
 
+/* ============ NAV ============ */
 function switchMainTab(tab) {
   currentTab = tab;
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  const btn = document.querySelector('.nav-btn[data-tab="' + tab + '"]');
+  const btn = document.querySelector('.nav-btn[data-tab="'+tab+'"]');
   if (btn) btn.classList.add('active');
-  document.getElementById('pageTitle').innerText = t(tab);
+  document.getElementById('pageTitle').innerText = tab === 'chats' ? 'iNetchat' : ({posts:'iNetchat',search:'بحث',settings:'حسابي'}[tab] || 'iNetchat');
   document.getElementById('fabCreate').style.display = (tab === 'posts') ? 'flex' : 'none';
   if (tab === 'chats') loadChats();
-  else if (tab === 'contacts') loadContacts();
-  else if (tab === 'search') renderSearchPage();
+  else if (tab === 'search') renderSearch();
   else if (tab === 'posts') loadPosts();
-  else if (tab === 'settings') renderSettings();
+  else if (tab === 'settings') loadProfile();
 }
 
-function escapeHtml(s) {
-  return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
+/* ============ CHAT LIST (Instagram style) ============ */
+async function loadChats() {
+  const c = document.getElementById('mainContainer');
+  c.innerHTML = '<div class="loader"></div>';
+  try {
+    const { data, error } = await sb.from('profiles').select('*').neq('id', currentUser.id).order('last_seen', { ascending: false, nullsFirst: false });
+    if (error) throw error;
+    const users = data || [];
+    const me = currentProfile || {};
 
-function isUserOnline(u) {
-  if (!u.last_seen) return false;
-  return (Date.now() - new Date(u.last_seen).getTime()) < 5 * 60 * 1000;
-}
+    // Stories row (users with notes)
+    let storiesHTML = '<div class="stories-row">';
+    storiesHTML += `<div class="story-item" onclick="openNoteModal()">
+      <div class="story-note" style="display:${me.note ? 'block' : 'none'}">${esc(me.note||'')}</div>
+      <div class="story-avatar self"><div class="story-avatar-inner"><div class="story-avatar-letter">${(me.display_name||me.username||'?').charAt(0).toUpperCase()}</div></div></div>
+      <div class="story-name">نوتتك</div>
+    </div>`;
+    users.filter(u => u.note && u.note.trim()).forEach(u => {
+      const init = (u.display_name||u.username||'?').charAt(0).toUpperCase();
+      storiesHTML += `<div class="story-item" data-user="${encodeURIComponent(JSON.stringify(u))}" onclick="openChatFromStory(this)">
+        <div class="story-note">${esc(u.note)}</div>
+        <div class="story-avatar"><div class="story-avatar-inner"><div class="story-avatar-letter" style="background:linear-gradient(45deg,#f09433,#dc2743,#bc1888)">${init}</div></div></div>
+        <div class="story-name">${esc(u.username)}</div>
+      </div>`;
+    });
+    storiesHTML += '</div>';
 
-function userCardHTML(u) {
-  const init = (u.display_name || u.username || '?').charAt(0).toUpperCase();
-  const online = isUserOnline(u);
-  const safe = encodeURIComponent(JSON.stringify(u));
-  return '<div class="card" data-user="' + safe + '" onclick="openChatFromCard(this)">' +
-    '<div class="card-avatar">' + init + '<div class="status-dot ' + (online ? 'online' : '') + '"></div></div>' +
-    '<div class="card-body"><div class="card-name">' + escapeHtml(u.display_name || u.username) + '</div>' +
-    '<div class="card-username">@' + escapeHtml(u.username) + '</div></div></div>';
+    let listHTML = '<div class="section-title">الرسائل</div>';
+    if (!users.length) {
+      listHTML += '<div class="empty">ما كاينش مستخدمين.<br>سجل حسابين باش تجرب.</div>';
+    } else {
+      users.forEach(u => {
+        const init = (u.display_name||u.username||'?').charAt(0).toUpperCase();
+        const on = isOnline(u);
+        const noteBubble = u.note && u.note.trim() ? `<div class="chat-note-bubble">${esc(u.note)}</div>` : '';
+        listHTML += `<div class="chat-item" data-user="${encodeURIComponent(JSON.stringify(u))}" onclick="openChatFromCard(this)">
+          <div class="chat-avatar-wrap">
+            ${noteBubble}
+            <div class="chat-avatar">${init}<div class="online-dot ${on?'on':''}"></div></div>
+          </div>
+          <div class="chat-info">
+            <div class="chat-name">${esc(u.display_name||u.username)}</div>
+            <div class="chat-preview">${u.note && u.note.trim() ? esc(u.note) : 'اضغط للمحادثة'}</div>
+          </div>
+          <div class="chat-time">${on ? 'متصل' : ''}</div>
+        </div>`;
+      });
+    }
+
+    c.innerHTML = storiesHTML + listHTML;
+  } catch(e) { c.innerHTML = '<div class="empty">Error: ' + esc(e.message) + '</div>'; }
 }
 
 function openChatFromCard(el) {
   const u = JSON.parse(decodeURIComponent(el.getAttribute('data-user')));
   openChatWith(u);
 }
-
-async function loadChats() {
-  const c = document.getElementById('mainContainer');
-  c.innerHTML = '<div class="section-title">' + t('chats') + '</div><div class="loader-dots"><span></span><span></span><span></span></div>';
-  try {
-    const { data, error } = await sb.from('profiles').select('*').neq('id', currentUser.id).limit(15);
-    if (error) throw error;
-    const users = data || [];
-    if (!users.length) {
-      c.innerHTML = '<div class="section-title">' + t('chats') + '</div><div class="empty">مازال ما عندك حتى دردشة.<br>روح لـ جهات الاتصال.</div>';
-      return;
-    }
-    let html = '<div class="section-title">ابدا محادثة مع</div>';
-    users.forEach(u => { html += userCardHTML(u); });
-    c.innerHTML = html;
-  } catch(e) { c.innerHTML = '<div class="empty">Error: ' + escapeHtml(e.message) + '</div>'; }
+function openChatFromStory(el) {
+  const u = JSON.parse(decodeURIComponent(el.getAttribute('data-user')));
+  openChatWith(u);
 }
 
-async function loadContacts() {
-  const c = document.getElementById('mainContainer');
-  c.innerHTML = '<div class="section-title">' + t('contacts') + '</div><div class="loader-dots"><span></span><span></span><span></span></div>';
-  try {
-    const { data, error } = await sb.from('profiles').select('*').neq('id', currentUser.id).order('created_at', {ascending: false});
-    if (error) throw error;
-    const users = data || [];
-    if (!users.length) {
-      c.innerHTML = '<div class="section-title">' + t('contacts') + '</div><div class="empty">ما كاينش مستخدمين.</div>';
-      return;
-    }
-    let html = '<div class="section-title">' + t('contacts') + ' (' + users.length + ')</div>';
-    users.forEach(u => { html += userCardHTML(u); });
-    c.innerHTML = html;
-  } catch(e) { c.innerHTML = '<div class="empty">Error: ' + escapeHtml(e.message) + '</div>'; }
+/* ============ SEARCH ============ */
+function renderSearch() {
+  document.getElementById('mainContainer').innerHTML =
+    `<div style="padding:8px 16px;">
+      <div class="search-bar">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="searchInput" placeholder="ابحث عن مستخدم..." oninput="doSearch()" autofocus>
+      </div>
+    </div>
+    <div id="searchResults"><div class="empty">🔍 ابدا الكتابة</div></div>`;
 }
 
-function renderSearchPage() {
-  const c = document.getElementById('mainContainer');
-  c.innerHTML = '<div class="search-box">' +
-    '<input type="text" id="searchInput" placeholder="ابحث..." oninput="doSearch()">' +
-    '<svg class="search-ico" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>' +
-    '</div><div id="searchResults"><div class="empty">🔍</div></div>';
-}
-
-let searchTimeout;
+let sTime;
 function doSearch() {
-  clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(async () => {
+  clearTimeout(sTime);
+  sTime = setTimeout(async () => {
     const q = document.getElementById('searchInput').value.trim();
     const box = document.getElementById('searchResults');
-    if (!q) { box.innerHTML = '<div class="empty">🔍</div>'; return; }
-    box.innerHTML = '<div class="loader-dots"><span></span><span></span><span></span></div>';
+    if (!q) { box.innerHTML = '<div class="empty">🔍 ابدا الكتابة</div>'; return; }
+    box.innerHTML = '<div class="loader"></div>';
     try {
-      const { data, error } = await sb.from('profiles').select('*')
-        .neq('id', currentUser.id)
-        .or('username.ilike.%' + q + '%,display_name.ilike.%' + q + '%').limit(30);
-      if (error) throw error;
+      const { data } = await sb.from('profiles').select('*').neq('id', currentUser.id)
+        .or(`username.ilike.%${q}%,display_name.ilike.%${q}%`).limit(30);
       const users = data || [];
       if (!users.length) { box.innerHTML = '<div class="empty">ما لقيناش</div>'; return; }
-      let html = '<div class="section-title">' + users.length + '</div>';
-      users.forEach(u => { html += userCardHTML(u); });
+      let html = '';
+      users.forEach(u => {
+        const init = (u.display_name||u.username||'?').charAt(0).toUpperCase();
+        const noteB = u.note && u.note.trim() ? `<div class="chat-note-bubble">${esc(u.note)}</div>` : '';
+        html += `<div class="chat-item" data-user="${encodeURIComponent(JSON.stringify(u))}" onclick="openChatFromCard(this)">
+          <div class="chat-avatar-wrap">
+            ${noteB}
+            <div class="chat-avatar">${init}</div>
+          </div>
+          <div class="chat-info">
+            <div class="chat-name">${esc(u.display_name||u.username)}</div>
+            <div class="chat-preview">@${esc(u.username)}</div>
+          </div>
+        </div>`;
+      });
       box.innerHTML = html;
-    } catch(e) { box.innerHTML = '<div class="empty">Error: ' + escapeHtml(e.message) + '</div>'; }
-  }, 350);
+    } catch(e) { box.innerHTML = '<div class="empty">Error</div>'; }
+  }, 300);
 }
 
+/* ============ CHAT ============ */
 async function openChatWith(otherUser) {
   currentChatUser = otherUser;
+  const init = (otherUser.display_name||otherUser.username||'?').charAt(0).toUpperCase();
+  document.getElementById('chatHeaderAvatar').innerText = init;
   document.getElementById('chatUserName').innerText = otherUser.display_name || otherUser.username;
-  document.getElementById('bottomBar').style.display = 'none';
+  document.getElementById('bottomBar').classList.add('hidden');
   try {
     const [a, b] = currentUser.id < otherUser.id ? [currentUser.id, otherUser.id] : [otherUser.id, currentUser.id];
     let { data: existing, error: e1 } = await sb.from('chats').select().eq('user1', a).eq('user2', b).maybeSingle();
@@ -713,12 +738,12 @@ async function openChatWith(otherUser) {
     lastMsgCount = 0;
     document.getElementById('chatWindow').classList.add('show');
     document.getElementById('chatMessages').innerHTML = '';
-    loadNote(); loadMessages();
+    loadMessages();
     if (msgPolling) clearInterval(msgPolling);
     msgPolling = setInterval(loadMessages, 2500);
   } catch(e) {
-    showToast(e.message || 'Error', 'error');
-    document.getElementById('bottomBar').style.display = 'flex';
+    toast(e.message || 'Error', 'error');
+    document.getElementById('bottomBar').classList.remove('hidden');
   }
 }
 
@@ -726,8 +751,8 @@ function closeChat() {
   document.getElementById('chatWindow').classList.remove('show');
   if (msgPolling) { clearInterval(msgPolling); msgPolling = null; }
   currentChatId = null; currentChatUser = null;
-  document.getElementById('bottomBar').style.display = 'flex';
-  switchMainTab(currentTab);
+  document.getElementById('bottomBar').classList.remove('hidden');
+  switchMainTab('chats');
 }
 
 async function loadMessages() {
@@ -740,17 +765,14 @@ async function loadMessages() {
     lastMsgCount = msgs.length;
     const box = document.getElementById('chatMessages');
     box.innerHTML = '';
-    if (!msgs.length) {
-      box.innerHTML = '<div class="empty">ابدا المحادثة 👋</div>';
-      return;
-    }
+    if (!msgs.length) { box.innerHTML = '<div class="empty">ابدا المحادثة 👋</div>'; return; }
     msgs.forEach(m => {
       const mine = m.sender_id === currentUser.id;
-      const time = m.created_at ? new Date(m.created_at).toLocaleTimeString('ar-DZ', {hour:'2-digit', minute:'2-digit'}) : '';
+      const time = m.created_at ? new Date(m.created_at).toLocaleTimeString('ar-DZ', {hour:'2-digit',minute:'2-digit'}) : '';
       const div = document.createElement('div');
       div.className = 'msg ' + (mine ? 'me' : 'other');
-      div.innerHTML = (mine ? '<button class="msg-del" onclick="deleteMsg(' + m.id + ')">✕</button>' : '') +
-        escapeHtml(m.content) + '<span class="msg-time">' + time + '</span>';
+      div.innerHTML = (mine ? `<button class="msg-del" onclick="deleteMsg(${m.id})">✕</button>` : '') +
+        esc(m.content) + `<span class="msg-time">${time}</span>`;
       box.appendChild(div);
     });
     box.scrollTop = box.scrollHeight;
@@ -766,82 +788,74 @@ async function sendMessage() {
     const { error } = await sb.from('messages').insert({ chat_id: currentChatId, sender_id: currentUser.id, content: text });
     if (error) throw error;
     lastMsgCount = 0; loadMessages();
-  } catch(e) { showToast(e.message || 'Error', 'error'); }
+  } catch(e) { toast(e.message || 'Error', 'error'); }
 }
 
 async function deleteMsg(id) {
-  try { await sb.from('messages').delete().eq('id', id); lastMsgCount = 0; loadMessages(); } catch(e) {}
+  try { await sb.from('messages').delete().eq('id', id); lastMsgCount = 0; loadMessages(); } catch(e){}
 }
 
-async function loadNote() {
-  if (!currentChatId) return;
-  try {
-    const { data } = await sb.from('chat_notes').select().eq('chat_id', currentChatId).maybeSingle();
-    const banner = document.getElementById('chatNoteBanner');
-    if (data && data.content) {
-      banner.innerHTML = '<div class="chat-note-banner" onclick="openNoteModal()">' +
-        '<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' +
-        '<div class="chat-note-text">' + escapeHtml(data.content) + '</div></div>';
-    } else {
-      banner.innerHTML = '<div class="chat-note-banner" onclick="openNoteModal()" style="opacity:0.6;">' +
-        '<svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
-        '<div class="chat-note-text">أضف نوت للمحادثة</div></div>';
-    }
-  } catch(e){}
-}
-
-async function openNoteModal() {
-  document.getElementById('noteContent').value = '';
-  try {
-    const { data } = await sb.from('chat_notes').select().eq('chat_id', currentChatId).maybeSingle();
-    if (data) document.getElementById('noteContent').value = data.content || '';
-  } catch(e){}
+/* ============ NOTES (Instagram style, per-user) ============ */
+function openNoteModal() {
+  document.getElementById('noteContent').value = (currentProfile && currentProfile.note) || '';
   document.getElementById('noteModal').classList.add('show');
 }
 function closeNoteModal() { document.getElementById('noteModal').classList.remove('show'); }
 
 async function saveNote() {
-  const content = document.getElementById('noteContent').value.trim();
-  if (!content) return;
+  const note = document.getElementById('noteContent').value.trim();
   try {
-    await sb.from('chat_notes').upsert({ chat_id: currentChatId, content, updated_by: currentUser.id, updated_at: new Date().toISOString() }, { onConflict: 'chat_id' });
-    closeNoteModal(); loadNote(); showToast('✓', 'success');
-  } catch(e) { showToast(e.message, 'error'); }
+    const { data, error } = await sb.from('profiles').update({ note, note_updated: new Date().toISOString() }).eq('id', currentUser.id).select().single();
+    if (error) throw error;
+    currentProfile = data;
+    localStorage.setItem('inet_user', JSON.stringify({ user: currentUser, profile: currentProfile }));
+    closeNoteModal(); toast('✓ النوت تحفظت'); loadChats();
+  } catch(e) { toast(e.message, 'error'); }
 }
 
-async function deleteNote() {
-  try { await sb.from('chat_notes').delete().eq('chat_id', currentChatId); closeNoteModal(); loadNote(); showToast('✓', 'success'); } catch(e) {}
+async function deleteMyNote() {
+  try {
+    const { data, error } = await sb.from('profiles').update({ note: '' }).eq('id', currentUser.id).select().single();
+    if (error) throw error;
+    currentProfile = data;
+    localStorage.setItem('inet_user', JSON.stringify({ user: currentUser, profile: currentProfile }));
+    closeNoteModal(); toast('✓ تحذف'); loadChats();
+  } catch(e) { toast(e.message, 'error'); }
 }
 
+/* ============ POSTS ============ */
 async function loadPosts() {
   const c = document.getElementById('mainContainer');
-  c.innerHTML = '<div class="section-title">' + t('posts') + '</div><div class="loader-dots"><span></span><span></span><span></span></div>';
+  c.innerHTML = '<div class="loader"></div>';
   try {
     const { data, error } = await sb.from('posts').select('*, profiles(username, display_name)').order('created_at', { ascending: false }).limit(50);
     if (error) throw error;
     const posts = data || [];
-    if (!posts.length) {
-      c.innerHTML = '<div class="section-title">' + t('posts') + '</div><div class="empty">مازال ما كاين تغريدة.</div>';
-      return;
-    }
-    let html = '<div class="section-title">' + t('posts') + ' (' + posts.length + ')</div>';
+    if (!posts.length) { c.innerHTML = '<div class="empty">مازال ما كاين منشورات.<br>اضغط + للنشر.</div>'; return; }
+    let html = '';
     posts.forEach(p => {
       const prof = p.profiles || {};
       const name = prof.display_name || prof.username || 'User';
-      const init = (name).charAt(0).toUpperCase();
+      const init = name.charAt(0).toUpperCase();
       const time = p.created_at ? new Date(p.created_at).toLocaleString('ar-DZ') : '';
       const mine = p.user_id === currentUser.id;
-      html += '<div class="post-card">' +
-        '<div class="post-head"><div class="post-avatar">' + init + '</div>' +
-        '<div class="post-info"><div class="post-name">' + escapeHtml(name) + '</div>' +
-        '<div class="post-time">' + time + '</div></div></div>' +
-        '<div class="post-text">' + escapeHtml(p.content) + '</div>' +
-        (p.image_url ? '<img src="' + escapeHtml(p.image_url) + '" class="post-image" onerror="this.style.display=\'none\'">' : '') +
-        (mine ? '<div class="post-actions"><button class="post-del" onclick="deletePost(' + p.id + ')">حذف</button></div>' : '') +
-        '</div>';
+      html += `<div class="post-card">
+        <div class="post-head">
+          <div class="post-avatar">${init}</div>
+          <div class="post-info">
+            <div class="post-name">${esc(name)}</div>
+            <div class="post-time">${time}</div>
+          </div>
+        </div>
+        ${p.image_url ? `<img src="${esc(p.image_url)}" class="post-image" onerror="this.style.display='none'">` : ''}
+        <div class="post-text">${esc(p.content)}</div>
+        <div class="post-actions">
+          ${mine ? `<button class="post-del" onclick="deletePost(${p.id})">حذف</button>` : ''}
+        </div>
+      </div>`;
     });
     c.innerHTML = html;
-  } catch(e) { c.innerHTML = '<div class="empty">Error: ' + escapeHtml(e.message) + '</div>'; }
+  } catch(e) { c.innerHTML = '<div class="empty">Error</div>'; }
 }
 
 function openCreatePost() {
@@ -854,73 +868,68 @@ function closePostModal() { document.getElementById('postModal').classList.remov
 async function publishPost() {
   const content = document.getElementById('postContent').value.trim();
   const image = document.getElementById('postImage').value.trim();
-  if (!content) return showToast('اكتب شي', 'error');
+  if (!content) return toast('اكتب شي', 'error');
   try {
     const { error } = await sb.from('posts').insert({ user_id: currentUser.id, content, image_url: image || null });
     if (error) throw error;
-    closePostModal(); loadPosts(); showToast('✓', 'success');
-  } catch(e) { showToast(e.message, 'error'); }
+    closePostModal(); toast('✓'); loadPosts();
+  } catch(e) { toast(e.message, 'error'); }
 }
 
 async function deletePost(id) {
   if (!confirm('حذف؟')) return;
-  try { await sb.from('posts').delete().eq('id', id); loadPosts(); } catch(e) {}
+  try { await sb.from('posts').delete().eq('id', id); loadPosts(); } catch(e){}
 }
 
-async function renderSettings() {
+/* ============ PROFILE ============ */
+async function loadProfile() {
   const c = document.getElementById('mainContainer');
+  c.innerHTML = '<div class="loader"></div>';
   try {
     const { data } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
     if (data) { profileData = data; currentProfile = data; }
-  } catch(e) {}
+  } catch(e){}
   const p = profileData || currentProfile || {};
-  const init = (p.display_name || p.username || '?').charAt(0).toUpperCase();
-  c.innerHTML = '<div class="profile-content">' +
-    '<div class="profile-big-avatar">' + init + '</div>' +
-    '<div class="profile-display-name">' + escapeHtml(p.display_name || p.username || 'User') + '</div>' +
-    '<div class="profile-username">@' + escapeHtml(p.username || 'user') + '</div>' +
-    '<div class="profile-bio">' + escapeHtml(p.bio || 'لا يوجد بايو') + '</div>' +
-    '<button class="profile-edit-btn" onclick="openEditProfile()">✏️ ' + t('editProfile') + '</button>' +
-
-    '<div class="settings-group"><div class="settings-group-title">الحساب</div>' +
-    '<div class="setting-row" onclick="openEditProfile()">' +
-    '<div class="setting-row-left"><div class="setting-row-icon"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>' +
-    '<div class="setting-row-label">' + t('editProfile') + '</div></div>' +
-    '<div class="setting-row-value">›</div></div>' +
-    '<div class="setting-row"><div class="setting-row-left">' +
-    '<div class="setting-row-icon"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div>' +
-    '<div class="setting-row-label">' + t('privateAccount') + '</div></div>' +
-    '<div class="setting-toggle ' + (p.is_private ? 'on' : '') + '" id="privToggle" onclick="togglePrivacy()"></div></div>' +
-    '</div>' +
-
-    '<div class="settings-group"><div class="settings-group-title">' + t('language') + '</div>' +
-    '<div class="setting-row" style="padding:12px 14px;">' +
-    '<div class="lang-row" style="width:100%;">' +
-    '<button class="lang-opt ' + (currentLang === 'ar' ? 'active' : '') + '" onclick="changeLang(\'ar\')">العربية</button>' +
-    '<button class="lang-opt ' + (currentLang === 'en' ? 'active' : '') + '" onclick="changeLang(\'en\')">English</button>' +
-    '</div></div></div>' +
-
-    '<div class="settings-group"><div class="settings-group-title">التطبيق</div>' +
-    '<div class="setting-row" onclick="toggleDarkMode()">' +
-    '<div class="setting-row-left"><div class="setting-row-icon"><svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></div>' +
-    '<div class="setting-row-label">' + t('darkMode') + '</div></div>' +
-    '<div class="setting-toggle ' + (document.body.classList.contains('light-mode') ? '' : 'on') + '" id="darkToggle"></div></div>' +
-    '</div>' +
-
-    '<div class="settings-group"><div class="settings-group-title">الأمان</div>' +
-    '<div class="setting-row danger" onclick="logout()">' +
-    '<div class="setting-row-left"><div class="setting-row-icon"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>' +
-    '<div class="setting-row-label">' + t('logout') + '</div></div>' +
-    '<div class="setting-row-value">›</div></div>' +
-    '</div></div>';
+  const init = (p.display_name||p.username||'?').charAt(0).toUpperCase();
+  const { count: postCount } = await sb.from('posts').select('*', { count: 'exact', head: true }).eq('user_id', currentUser.id);
+  c.innerHTML = `
+    <div class="profile-header">
+      <div class="profile-pic"><div class="profile-pic-inner">${init}</div></div>
+      <div class="profile-stats">
+        <div class="profile-stat"><div class="profile-stat-num">${postCount||0}</div><div class="profile-stat-label">منشور</div></div>
+        <div class="profile-stat"><div class="profile-stat-num">0</div><div class="profile-stat-label">متابع</div></div>
+        <div class="profile-stat"><div class="profile-stat-num">0</div><div class="profile-stat-label">يتابع</div></div>
+      </div>
+    </div>
+    <div class="profile-name">${esc(p.display_name||p.username||'User')}</div>
+    <div class="profile-bio">${esc(p.bio || 'لا يوجد بايو')}</div>
+    <div class="profile-actions">
+      <button onclick="openEditProfile()">تعديل البروفايل</button>
+      <button onclick="openNoteModal()">📝 نوتي</button>
+    </div>
+    <div class="settings-list">
+      <div class="setting-item" onclick="toggleDark()">
+        <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <div class="setting-item-label">الوضع الليلي</div>
+        <div class="setting-item-value">${document.body.classList.contains('dark') ? 'مفعّل' : 'مغلق'}</div>
+      </div>
+      <div class="setting-item" onclick="switchMainTab('search')">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <div class="setting-item-label">البحث</div>
+        <div class="setting-item-value">›</div>
+      </div>
+      <div class="setting-item danger" onclick="logout()">
+        <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <div class="setting-item-label">تسجيل الخروج</div>
+        <div class="setting-item-value">›</div>
+      </div>
+    </div>`;
 }
 
-function changeLang(lang) {
-  currentLang = lang;
-  localStorage.setItem('inet_lang', lang);
-  document.body.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
-  document.getElementById('pageTitle').innerText = t(currentTab);
-  renderSettings();
+function toggleDark() {
+  document.body.classList.toggle('dark');
+  localStorage.setItem('inet_dark', document.body.classList.contains('dark') ? 'on' : 'off');
+  loadProfile();
 }
 
 function openEditProfile() {
@@ -936,38 +945,22 @@ async function saveProfile() {
   const bio = document.getElementById('editBio').value.trim();
   if (!display_name) return;
   try {
-    const { data, error } = await sb.from('profiles').update({ display_name, bio, is_private: profileData.is_private || false }).eq('id', currentUser.id).select().single();
+    const { data, error } = await sb.from('profiles').update({ display_name, bio }).eq('id', currentUser.id).select().single();
     if (error) throw error;
     profileData = data; currentProfile = data;
     localStorage.setItem('inet_user', JSON.stringify({ user: currentUser, profile: currentProfile }));
-    closeEditModal(); renderSettings(); showToast('✓', 'success');
-  } catch(e) { showToast(e.message, 'error'); }
+    closeEditModal(); loadProfile(); toast('✓');
+  } catch(e) { toast(e.message, 'error'); }
 }
 
-async function togglePrivacy() {
-  if (!profileData) return;
-  profileData.is_private = !profileData.is_private;
-  const el = document.getElementById('privToggle');
-  if (el) el.classList.toggle('on', profileData.is_private);
-  try { await sb.from('profiles').update({ is_private: profileData.is_private }).eq('id', currentUser.id); } catch(e) {}
-}
-
-function toggleDarkMode() {
-  document.body.classList.toggle('light-mode');
-  const isLight = document.body.classList.contains('light-mode');
-  localStorage.setItem('inet_dark', isLight ? 'off' : 'on');
-  const t2 = document.getElementById('darkToggle');
-  if (t2) t2.classList.toggle('on', !isLight);
-}
-
+/* ============ USER PROFILE MODAL ============ */
 function openUserProfile(user) {
   if (!user) return;
   viewingProfile = user;
-  const init = (user.display_name || user.username || '?').charAt(0).toUpperCase();
-  document.getElementById('upAvatar').innerText = init;
+  document.getElementById('upAvatar').innerText = (user.display_name||user.username||'?').charAt(0).toUpperCase();
   document.getElementById('upName').innerText = user.display_name || user.username;
   document.getElementById('upUsername').innerText = '@' + user.username;
-  document.getElementById('upBio').innerText = user.bio || 'لا يوجد بايو';
+  document.getElementById('upBio').innerText = user.bio || (user.note ? '📝 ' + user.note : 'لا يوجد بايو');
   document.getElementById('userProfileModal').classList.add('show');
 }
 function closeUserProfile() {
@@ -981,12 +974,13 @@ function startChatFromProfile() {
   openChatWith(u);
 }
 
-function showToast(msg, type) {
-  type = type || 'success';
+/* ============ TOAST ============ */
+function toast(msg, type) {
   const el = document.getElementById('toast');
   el.innerText = msg;
-  el.className = type + ' show';
-  setTimeout(() => el.classList.remove('show'), 2500);
+  el.className = (type === 'error' ? 'error ' : '') + 'show';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.className = '', 2500);
 }
 </script>
 </body>
