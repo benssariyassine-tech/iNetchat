@@ -3686,7 +3686,7 @@ function attachLongPress(el, msgId, isMine, content){
   el.addEventListener('touchstart', start, {passive:true});
   el.addEventListener('touchmove', move, {passive:true});
   el.addEventListener('touchend', cancel);
-  el-menu.addEventListener('touchcancel', cancel);
+  el.addEventListener('touchcancel', cancel);
   el.addEventListener('mousedown', start);
   el.addEventListener('mousemove', move);
   el.addEventListener('mouseup', cancel);
@@ -3759,7 +3759,7 @@ function showMsgMenu(el, msgId, isMine, content){
   </div>`;
 
   let items = `
-    <div class="" onclick="copyMsg()">
+    <div class="msg-menu-item" onclick="copyMsg()">
       <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
       ${t('copy')}
     </div>
