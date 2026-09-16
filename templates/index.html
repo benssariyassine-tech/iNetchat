@@ -3119,6 +3119,43 @@ async function sendMessage(){
     toast(e.message || 'خطأ', 'error');
   }
 }
+/* ============================================================
+   STORY TAP HANDLER (واحدة = فتح، زوج = قلب)
+   ============================================================ */
+let storyTapTimer = null;
+let lastStoryTapTime = 0;
+
+function handleStoryClick(e, uid){
+  if(e.type === 'click' && 'ontouchstart' in window) return;
+  const now = Date.now();
+  if(now - lastStoryTapTime < 350){
+    clearTimeout(storyTapTimer);
+    lastStoryTapTime = 0;
+    heartNote(uid);
+  } else {
+    lastStoryTapTime = now;
+    storyTapTimer = setTimeout(() => {
+      openUserProfile(uid);
+      lastStoryTapTime = 0;
+    }, 350);
+  }
+}
+
+function handleStoryTap(e, uid){
+  e.preventDefault();
+  const now = Date.now();
+  if(now - lastStoryTapTime < 350){
+    clearTimeout(storyTapTimer);
+    lastStoryTapTime = 0;
+    heartNote(uid);
+  } else {
+    lastStoryTapTime = now;
+    storyTapTimer = setTimeout(() => {
+      openUserProfile(uid);
+      lastStoryTapTime = 0;
+    }, 350);
+  }
+}
 
 /* ============================================================
    NOTE HEART — ضغط مزدوج على نوت = ❤️
