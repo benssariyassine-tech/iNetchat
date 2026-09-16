@@ -2787,6 +2787,7 @@ async function openChatWith(otherUser){
 function closeChat(){
   document.getElementById('chatWindow').classList.remove('show');
   if(msgPolling){ clearInterval(msgPolling); msgPolling = null; }
+  lastNotifCheck = new Date().toISOString();
   currentChatId = null;
   currentChatUser = null;
   lastMsgCount = 0;
