@@ -1918,7 +1918,7 @@ async function loadChats(){
       if(!u.note || !u.note.trim()) continue;
       const hearted = myHeart.includes(u.id);
       storiesHTML += `
-        <div class="story ${hearted?'hearted':'has-note'}" onclick="openUserProfile('${u.id}')">
+        <div class="story ${hearted?'hearted':'has-note'}" data-uid="${u.id}" ontouchend="handleStoryTap(event,'${u.id}')" onclick="handleStoryClick(event,'${u.id}')">
           <div class="story-note">${esc(u.note)}</div>
           <div class="story-ring">
             <div class="story-inner">
