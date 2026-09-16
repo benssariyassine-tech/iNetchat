@@ -3677,7 +3677,7 @@ function attachLongPress(el, msgId, isMine, content){
     }
   };
 
-  const cancel =msg () => {
+  const cancel = () => {
     if(pressTimer) clearTimeout(pressTimer);
     pressTimer = null;
     el.classList.remove('pressed');
@@ -3689,7 +3689,7 @@ function attachLongPress(el, msgId, isMine, content){
   el-menu.addEventListener('touchcancel', cancel);
   el.addEventListener('mousedown', start);
   el.addEventListener('mousemove', move);
-  el.addEventListener('-itemmouseup', cancel);
+  el.addEventListener('mouseup', cancel);
   el.addEventListener('mouseleave', cancel);
 }
 
