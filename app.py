@@ -29,24 +29,45 @@ def signup():
     password = d.get('password', '')
     username = d.get('username', '').strip()
     display_name = d.get('display_name', '').strip()
+    avatar_url = d.get('avatar_url', '').strip()
     if not email or not password or not username:
         return jsonify({"error": "كل الحقول مطلوبة"}), 400
     if len(password) < 6:
-        return jsonify({"error": "كلمة المرور 6 أحرف"}), 400
+        return jsonify({"error": "كلمة المرور 6 أحرف على الأقل"}), 400
     try:
-        r = supabase.auth.sign_up({"email": email, "password": password})
+        # ✅ نبعثو البيانات مع user_metadata
+        r = supabase.auth.sign_up({
+            "email": email,
+            "password": password,
+            "options": {
+                "data": {
+                    "username": username,
+                    "display_name": display_name or username,
+                    "avatar_url": avatar_url or ""
+                }
+            }
+        })
         if not r.user:
             return jsonify({"error": "فشل الإنشاء"}), 400
         uid = r.user.id
-        supabase.table('profiles').insert({
-            "id": uid, "username": username,
-            "display_name": display_name or username,
-            "is_private": False
-        }).execute()
-        return jsonify({"status": "success", "user": {"id": uid, "email": email}}), 201
+        # نحاولو نضيفو البروفايل فوراً
+        try:
+            supabase.table('profiles').insert({
+                "id": uid,
+                "username": username,
+                "display_name": display_name or username,
+                "avatar_url": avatar_url or None,
+                "is_private": False
+            }).execute()
+        except:
+            pass  # نكملو حتى لو فشل (راح يتزاد تلقائياً في الـ login)
+        return jsonify({
+            "status": "success",
+            "user": {"id": uid, "email": email, "username": username}
+        }), 201
     except Exception as e:
         if "already" in str(e).lower():
-            return jsonify({"error": "الإيميل مستعمل"}), 400
+            return jsonify({"error": "الإيميل مستعمل من قبل"}), 400
         return jsonify({"error": str(e)}), 500
 
 
@@ -59,11 +80,38 @@ def login():
         r = supabase.auth.sign_in_with_password({"email": email, "password": password})
         if not r.user:
             return jsonify({"error": "بيانات غالطة"}), 401
-        p = supabase.table('profiles').select('*').eq('id', r.user.id).execute()
+
+        uid = r.user.id
+        meta = r.user.user_metadata or {}
+
+        # ✅ نجيبو البروفايل، وإذا ماشي موجود نخلقوه من user_metadata
+        p = supabase.table('profiles').select('*').eq('id', uid).execute()
+        if not p.data:
+            profile_data = {
+                "id": uid,
+                "username": meta.get('username') or email.split('@')[0],
+                "display_name": meta.get('display_name') or meta.get('username') or email.split('@')[0],
+                "avatar_url": meta.get('avatar_url') or None,
+                "is_private": False
+            }
+            try:
+                ins = supabase.table('profiles').insert(profile_data).execute()
+                profile = ins.data[0] if ins.data else profile_data
+            except Exception as ins_err:
+                # إذا كان username مكرر، نضيفو suffix
+                profile_data['username'] = profile_data['username'] + '_' + uid[:4]
+                try:
+                    ins = supabase.table('profiles').insert(profile_data).execute()
+                    profile = ins.data[0] if ins.data else profile_data
+                except:
+                    profile = profile_data
+        else:
+            profile = p.data[0]
+
         return jsonify({
             "status": "success",
-            "user": {"id": r.user.id, "email": r.user.email},
-            "profile": p.data[0] if p.data else None
+            "user": {"id": uid, "email": r.user.email},
+            "profile": profile
         })
     except Exception as e:
         return jsonify({"error": "إيميل أو كلمة مرور غالطين"}), 401
@@ -72,8 +120,6 @@ def login():
 # ========== USERS ==========
 @app.route('/api/users')
 def get_users():
-    if not supabase:
-        return jsonify({"error": "no supabase"}), 500
     me = request.args.get('me', '')
     try:
         if me:
@@ -82,7 +128,7 @@ def get_users():
             r = supabase.table('profiles').select('*').limit(100).execute()
         return jsonify({"users": r.data, "count": len(r.data)})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": str(e), "users": []}), 500
 
 
 @app.route('/api/users/search')
@@ -98,7 +144,7 @@ def search_users():
         users = [u for u in r.data if u['id'] != me]
         return jsonify({"users": users})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": str(e), "users": []}), 500
 
 
 @app.route('/api/profile/<user_id>')
@@ -167,7 +213,9 @@ def get_messages(chat_id):
 @app.route('/api/messages/send', methods=['POST'])
 def send_message():
     d = request.get_json()
-    cid, sid, content = d.get('chat_id'), d.get('sender_id'), d.get('content', '').strip()
+    cid = d.get('chat_id')
+    sid = d.get('sender_id')
+    content = d.get('content', '').strip()
     if not cid or not sid or not content:
         return jsonify({"error": "missing"}), 400
     try:
@@ -187,20 +235,6 @@ def delete_message(msg_id):
         return jsonify({"status": "success"})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-
-# ========== TYPING INDICATOR ==========
-@app.route('/api/typing', methods=['POST'])
-def set_typing():
-    d = request.get_json()
-    cid, uid = d.get('chat_id'), d.get('user_id')
-    try:
-        supabase.table('chat_members').update({
-            "typing_until": "now()"
-        }).eq('chat_id', cid).eq('user_id', uid).execute()
-        return jsonify({"status": "ok"})
-    except:
-        return jsonify({"status": "ok"})
 
 
 # ========== CHAT NOTES ==========
@@ -250,17 +284,17 @@ def get_posts():
     try:
         r = supabase.table('posts').select('*').order('created_at', desc=True).limit(50).execute()
         posts = r.data
-        # جيب أسماء المستخدمين
         for p in posts:
             try:
-                prof = supabase.table('profiles').select('username, display_name').eq('id', p['user_id']).execute()
+                prof = supabase.table('profiles').select('username, display_name, avatar_url').eq('id', p['user_id']).execute()
                 if prof.data:
                     p['username'] = prof.data[0]['username']
                     p['display_name'] = prof.data[0]['display_name']
+                    p['avatar_url'] = prof.data[0].get('avatar_url')
             except: pass
         return jsonify({"posts": posts})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": str(e), "posts": []}), 500
 
 
 @app.route('/api/posts/create', methods=['POST'])
