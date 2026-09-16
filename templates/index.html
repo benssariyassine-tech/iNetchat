@@ -3190,7 +3190,7 @@ let notifBannerTimer = null;
 
 function startNotificationPolling(){
   if(notifPolling) clearInterval(notifPolling);
-  notifPolling = setInterval(checkNewNotifications, 4000);
+  notifPolling = setInterval(checkNewNotifications, 6000);
   setTimeout(checkNewNotifications, 3000);
 }
 
