@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>iNetchat — دردشة خاصة</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800;900&family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<title>iNetchat</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800;900&family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 :root {
@@ -24,7 +24,6 @@ body {
   padding-bottom: 100px; transition: background 0.3s, color 0.3s;
 }
 
-/* SPLASH */
 #splash { position: fixed; inset: 0; background: var(--bg); z-index: 9999;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   transition: opacity 0.6s ease; }
@@ -40,7 +39,6 @@ body {
   -webkit-text-fill-color: transparent; }
 @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
 
-/* AUTH */
 #authScreen { display: none; width: 100%; max-width: 400px;
   margin: 0 auto; padding: 40px 20px; min-height: 100vh;
   align-items: center; justify-content: center; flex-direction: column; }
@@ -79,7 +77,6 @@ textarea.input { resize: none; }
   font-weight: 800; font-family: inherit; font-size: 13px;
   cursor: pointer; text-decoration: underline; }
 
-/* MAIN APP */
 #appScreen { display: none; min-height: 100vh; }
 #appScreen.show { display: block; animation: fadeUp 0.4s ease; }
 .app-header { display: flex; justify-content: space-between; align-items: center;
@@ -118,7 +115,6 @@ body.light-mode .app-header { background: rgba(242,242,247,0.85); }
 .empty { text-align: center; color: var(--subtext);
   padding: 60px 20px; font-size: 13px; line-height: 1.6; }
 
-/* SEARCH */
 .search-box { position: relative; margin-bottom: 12px; }
 .search-box input { width: 100%; padding: 14px 16px 14px 44px;
   background: var(--card); border: 1.5px solid var(--border);
@@ -129,7 +125,6 @@ body.light-mode .app-header { background: rgba(242,242,247,0.85); }
   transform: translateY(-50%); width: 18px; height: 18px;
   stroke: var(--subtext); fill: none; stroke-width: 2.2; }
 
-/* CHAT */
 #chatWindow { position: fixed; inset: 0; background: var(--bg);
   z-index: 1500; display: none; flex-direction: column; }
 #chatWindow.show { display: flex; animation: slideIn 0.3s ease; }
@@ -147,7 +142,6 @@ body.light-mode .chat-header { background: rgba(242,242,247,0.9); }
 .chat-user { flex: 1; min-width: 0; cursor: pointer; }
 .chat-user-name { font-size: 15px; font-weight: 800; }
 .chat-user-status { font-size: 11px; color: var(--success); font-weight: 700; }
-.chat-user-status.typing { color: var(--warning); }
 
 .chat-note-banner { margin: 8px 16px; padding: 10px 14px;
   background: linear-gradient(135deg, rgba(255,159,10,0.15), rgba(255,159,10,0.08));
@@ -159,10 +153,7 @@ body.light-mode .chat-header { background: rgba(242,242,247,0.9); }
   flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .chat-messages { flex: 1; overflow-y: auto; padding: 20px 16px;
-  display: flex; flex-direction: column; gap: 8px;
-  background:
-    radial-gradient(circle at 20% 30%, rgba(10,132,255,0.05), transparent 40%),
-    radial-gradient(circle at 80% 70%, rgba(90,200,250,0.05), transparent 40%); }
+  display: flex; flex-direction: column; gap: 8px; }
 .msg { max-width: 78%; padding: 10px 14px; border-radius: 18px;
   font-size: 14px; line-height: 1.5; word-wrap: break-word;
   animation: msgIn 0.25s ease; position: relative; }
@@ -178,8 +169,7 @@ body.light-mode .chat-header { background: rgba(242,242,247,0.9); }
   width: 24px; height: 24px; border-radius: 50%;
   background: var(--danger); color: #fff; border: none;
   display: none; align-items: center; justify-content: center;
-  font-size: 12px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-.msg.me:hover .msg-del, .msg.me:active .msg-del { display: flex; }
+  font-size: 12px; cursor: pointer; }
 
 .chat-input { display: flex; gap: 8px; padding: 12px 16px;
   background: rgba(11,11,15,0.9); backdrop-filter: blur(20px);
@@ -194,10 +184,8 @@ body.light-mode .chat-input { background: rgba(242,242,247,0.9); }
   border: none; color: #fff; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   box-shadow: 0 6px 20px rgba(10,132,255,0.4); }
-.chat-send:active { transform: scale(0.9); }
 .chat-send svg { width: 20px; height: 20px; stroke: #fff; fill: none; stroke-width: 2.5; }
 
-/* PROFILE / SETTINGS */
 .profile-content { padding: 24px 20px 40px 20px; max-width: 500px; margin: 0 auto; width: 100%; }
 .profile-big-avatar { width: 110px; height: 110px; border-radius: 50%;
   background: linear-gradient(135deg,var(--accent),var(--accent2));
@@ -205,12 +193,9 @@ body.light-mode .chat-input { background: rgba(242,242,247,0.9); }
   font-weight: 900; font-size: 44px; color: #fff;
   margin: 0 auto 16px auto;
   box-shadow: 0 12px 30px rgba(10,132,255,0.4); }
-.profile-display-name { font-size: 22px; font-weight: 900;
-  text-align: center; margin-bottom: 4px; }
-.profile-username { font-size: 14px; color: var(--subtext);
-  text-align: center; margin-bottom: 6px; }
-.profile-bio { font-size: 13px; color: var(--subtext);
-  text-align: center; margin-bottom: 20px; line-height: 1.5; }
+.profile-display-name { font-size: 22px; font-weight: 900; text-align: center; margin-bottom: 4px; }
+.profile-username { font-size: 14px; color: var(--subtext); text-align: center; margin-bottom: 6px; }
+.profile-bio { font-size: 13px; color: var(--subtext); text-align: center; margin-bottom: 20px; line-height: 1.5; }
 .profile-edit-btn { display: block; margin: 0 auto 28px auto;
   padding: 10px 24px; border-radius: 12px;
   background: var(--card); border: 1.5px solid var(--accent);
@@ -223,8 +208,7 @@ body.light-mode .chat-input { background: rgba(242,242,247,0.9); }
   letter-spacing: 1px; text-transform: uppercase; }
 .setting-row { display: flex; align-items: center; justify-content: space-between;
   padding: 14px 18px; border-top: 1px solid var(--border);
-  cursor: pointer; transition: background 0.2s; }
-.setting-row:active { background: rgba(255,255,255,0.03); }
+  cursor: pointer; }
 .setting-row-left { display: flex; align-items: center; gap: 12px; }
 .setting-row-icon { width: 34px; height: 34px; border-radius: 10px;
   background: rgba(10,132,255,0.12); display: flex;
@@ -237,19 +221,16 @@ body.light-mode .chat-input { background: rgba(242,242,247,0.9); }
 .setting-row.danger .setting-row-icon svg { stroke: var(--danger); }
 .setting-row.danger .setting-row-label { color: var(--danger); }
 .setting-toggle { width: 46px; height: 26px; border-radius: 13px;
-  background: var(--border); position: relative;
-  transition: background 0.3s; cursor: pointer; }
+  background: var(--border); position: relative; transition: background 0.3s; cursor: pointer; }
 .setting-toggle.on { background: var(--accent); }
 .setting-toggle::after { content: ''; position: absolute; top: 3px; right: 3px;
   width: 20px; height: 20px; border-radius: 50%;
   background: #fff; transition: transform 0.3s; }
 .setting-toggle.on::after { transform: translateX(-20px); }
 
-/* BOTTOM NAV */
 .bottom-bar { position: fixed; bottom: 14px; left: 50%;
   transform: translateX(-50%); width: 94%; max-width: 520px;
-  z-index: 1000; display: flex; align-items: center; gap: 8px;
-  justify-content: center; }
+  z-index: 1000; display: flex; align-items: center; gap: 8px; justify-content: center; }
 .bottom-nav { flex: 1; display: flex; justify-content: space-around;
   align-items: center; padding: 10px 4px;
   background: rgba(20,20,26,0.92); backdrop-filter: blur(30px);
@@ -260,30 +241,22 @@ body.light-mode .bottom-nav { background: rgba(255,255,255,0.95); }
   align-items: center; justify-content: center; gap: 3px;
   background: none; border: none; color: var(--subtext);
   font-family: inherit; font-size: 10px; font-weight: 800;
-  cursor: pointer; padding: 6px 4px; border-radius: 14px;
-  transition: all 0.25s; position: relative; }
-.nav-btn svg { width: 22px; height: 22px; stroke: currentColor;
-  fill: none; stroke-width: 2; transition: all 0.25s; }
+  cursor: pointer; padding: 6px 4px; border-radius: 14px; }
+.nav-btn svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; }
 .nav-btn.active { color: var(--accent); }
-.nav-btn.active svg { stroke: var(--accent);
-  filter: drop-shadow(0 0 8px rgba(10,132,255,0.6)); }
+.nav-btn.active svg { stroke: var(--accent); }
 .search-fab { width: 56px; height: 56px; border-radius: 50%;
   background: rgba(20,20,26,0.92); backdrop-filter: blur(30px);
   border: 1px solid var(--border); color: var(--text);
   cursor: pointer; display: flex; align-items: center;
   justify-content: center; flex-shrink: 0;
-  box-shadow: 0 15px 40px rgba(0,0,0,0.5); transition: transform 0.2s; }
+  box-shadow: 0 15px 40px rgba(0,0,0,0.5); }
 body.light-mode .search-fab { background: rgba(255,255,255,0.95); }
-.search-fab:active { transform: scale(0.9); }
-.search-fab svg { width: 22px; height: 22px; stroke: var(--text);
-  fill: none; stroke-width: 2.2; }
+.search-fab svg { width: 22px; height: 22px; stroke: var(--text); fill: none; stroke-width: 2.2; }
 
-/* POSTS */
 .post-card { background: var(--card); border: 1px solid var(--border);
-  border-radius: 18px; padding: 16px; margin-bottom: 12px;
-  animation: msgIn 0.25s ease; }
-.post-head { display: flex; align-items: center; gap: 10px;
-  margin-bottom: 10px; }
+  border-radius: 18px; padding: 16px; margin-bottom: 12px; }
+.post-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
 .post-avatar { width: 40px; height: 40px; border-radius: 50%;
   background: linear-gradient(135deg,var(--accent),var(--accent2));
   display: flex; align-items: center; justify-content: center;
@@ -291,10 +264,8 @@ body.light-mode .search-fab { background: rgba(255,255,255,0.95); }
 .post-info { flex: 1; min-width: 0; }
 .post-name { font-size: 14px; font-weight: 800; }
 .post-time { font-size: 11px; color: var(--subtext); font-weight: 600; }
-.post-text { font-size: 14px; line-height: 1.6; margin-bottom: 10px;
-  word-wrap: break-word; }
-.post-image { width: 100%; border-radius: 14px; max-height: 400px;
-  object-fit: cover; margin-bottom: 10px; }
+.post-text { font-size: 14px; line-height: 1.6; margin-bottom: 10px; word-wrap: break-word; }
+.post-image { width: 100%; border-radius: 14px; max-height: 400px; object-fit: cover; margin-bottom: 10px; }
 .post-actions { display: flex; justify-content: flex-end; gap: 8px; }
 .post-del { background: rgba(255,69,58,0.1); color: var(--danger);
   border: 1px solid rgba(255,69,58,0.3); padding: 6px 12px;
@@ -307,22 +278,16 @@ body.light-mode .search-fab { background: rgba(255,255,255,0.95); }
   border: none; color: #fff; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   box-shadow: 0 10px 30px rgba(10,132,255,0.5); z-index: 999; }
-.fab-create:active { transform: scale(0.9); }
-.fab-create svg { width: 24px; height: 24px; stroke: #fff;
-  fill: none; stroke-width: 2.5; }
+.fab-create svg { width: 24px; height: 24px; stroke: #fff; fill: none; stroke-width: 2.5; }
 
-/* MODAL */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7);
   backdrop-filter: blur(6px); z-index: 2000;
-  display: none; align-items: center; justify-content: center;
-  padding: 20px; }
-.modal-overlay.show { display: flex; animation: fadeUp 0.3s ease; }
+  display: none; align-items: center; justify-content: center; padding: 20px; }
+.modal-overlay.show { display: flex; }
 .modal-card { background: var(--card); border: 1px solid var(--border);
   border-radius: 24px; padding: 24px 22px; width: 100%;
-  max-width: 400px; max-height: 90vh; overflow-y: auto;
-  position: relative; }
-.modal-card h3 { font-size: 18px; font-weight: 900;
-  margin-bottom: 20px; text-align: center; }
+  max-width: 400px; max-height: 90vh; overflow-y: auto; position: relative; }
+.modal-card h3 { font-size: 18px; font-weight: 900; margin-bottom: 20px; text-align: center; }
 .modal-btn-row { display: flex; gap: 8px; margin-top: 8px; }
 .modal-btn-row .btn-primary { flex: 1; }
 .btn-secondary-modal { flex: 1; padding: 15px; background: var(--card2);
@@ -330,7 +295,6 @@ body.light-mode .search-fab { background: rgba(255,255,255,0.95); }
   border-radius: 14px; font-weight: 800; font-size: 15px;
   font-family: inherit; cursor: pointer; }
 
-/* TOAST */
 #toast { position: fixed; top: 20px; left: 50%;
   transform: translateX(-50%) translateY(-100px);
   background: var(--card); border: 1px solid var(--border);
@@ -348,12 +312,11 @@ body.light-mode .search-fab { background: rgba(255,255,255,0.95); }
 .loader-dots span:nth-child(3) { animation-delay: 0.4s; background: #ff9f0a; }
 @keyframes dotPulse { 0%,100% { opacity: 0.4; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1.2); } }
 
-/* LANG SWITCH */
 .lang-row { display: flex; gap: 8px; }
 .lang-opt { flex: 1; padding: 12px; border-radius: 12px;
   background: var(--card2); border: 1.5px solid var(--border);
   color: var(--text); font-family: inherit; font-weight: 800;
-  font-size: 13px; cursor: pointer; transition: all 0.2s; }
+  font-size: 13px; cursor: pointer; }
 .lang-opt.active { background: linear-gradient(135deg,var(--accent),var(--accent2));
   border-color: transparent; color: #fff; }
 </style>
@@ -377,7 +340,7 @@ body.light-mode .search-fab { background: rgba(255,255,255,0.95); }
   </div>
   <form id="authForm" onsubmit="handleAuth(event)" style="width:100%">
     <div class="form-group" id="usernameGroup" style="display:none;"><label>اسم المستخدم</label><input type="text" id="username" class="input" placeholder="ahmed_dz"></div>
-    <div class="form-group" id="displayNameGroup" style="display:none;"><label>الاسم الكامل</label><input type="text" id="displayName" class="input" placeholder="أحمد بن علي"></div>
+    <div class="form-group" id="displayNameGroup" style="display:none;"><label>الاسم الكامل</label><input type="text" id="displayName" class="input" placeholder="أحمد"></div>
     <div class="form-group"><label>البريد الإلكتروني</label><input type="email" id="email" class="input" placeholder="example@gmail.com" required></div>
     <div class="form-group"><label>كلمة المرور</label><input type="password" id="password" class="input" placeholder="6 أحرف على الأقل" required></div>
     <button type="submit" class="btn-primary" id="submitBtn">تسجيل الدخول</button>
@@ -393,9 +356,7 @@ body.light-mode .search-fab { background: rgba(255,255,255,0.95); }
     </div>
     <div class="page-title" id="pageTitle">المحادثات</div>
   </div>
-
   <div class="container" id="mainContainer"></div>
-
   <button class="fab-create" id="fabCreate" onclick="openCreatePost()" style="display:none;">
     <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
   </button>
@@ -435,9 +396,9 @@ body.light-mode .search-fab { background: rgba(255,255,255,0.95); }
   </div>
   <div id="chatNoteBanner"></div>
   <div class="chat-messages" id="chatMessages"></div>
-  <div class="chat-input onclick">
-    <input type="text" id="msgInput"=" placeholder="اكتب رسالة..." onkeypress="ifsend(event.key==='Enter') sendMessage()" oninputMessage="notifyTyping()">
-   () <button class="chat-send""><svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+  <div class="chat-input">
+    <input type="text" id="msgInput" placeholder="اكتب رسالة..." onkeypress="if(event.key==='Enter') sendMessage()">
+    <button class="chat-send" onclick="sendMessage()"><svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
   </div>
 </div>
 
@@ -456,7 +417,6 @@ body.light-mode .search-fab { background: rgba(255,255,255,0.95); }
 <div class="modal-overlay" id="noteModal">
   <div class="modal-card">
     <h3>📝 نوت المحادثة</h3>
-    <p style="color:var(--subtext);font-size:12px;text-align:center;margin-bottom:14px;">شارك ملاحظة تظهر لك وله في هذه المحادثة</p>
     <div class="form-group"><textarea id="noteContent" class="input" style="height:100px" placeholder="اكتب النوت هنا..."></textarea></div>
     <div class="modal-btn-row">
       <button class="btn-primary" onclick="saveNote()">حفظ</button>
@@ -494,15 +454,10 @@ body.light-mode .search-fab { background: rgba(255,255,255,0.95); }
 <div id="toast"></div>
 
 <script>
-/* ============================================================
-   ⚙️  CONFIG — تم تعبئة المفاتيح تلقائياً
-   ============================================================ */
 const SUPABASE_URL = 'https://qmgxrnyouzanulvmpizb.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_TmPuK2aXlav91I5mA91FXw_LdgECvHf';
-
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-/* ============ STATE ============ */
 let authMode = 'login';
 let currentUser = null;
 let currentProfile = null;
@@ -515,36 +470,22 @@ let currentLang = 'ar';
 let viewingProfile = null;
 let lastMsgCount = 0;
 
-/* ============ TRANSLATIONS ============ */
 const T = {
-  ar: {
-    chats: 'المحادثات', contacts: 'جهات الاتصال', posts: 'تغريدة', settings: 'الإعدادات', search: 'البحث',
-    login: 'تسجيل الدخول', signup: 'إنشاء حساب', email: 'البريد الإلكتروني', password: 'كلمة المرور',
-    username: 'اسم المستخدم', displayName: 'الاسم الكامل', createAccount: 'إنشاء حساب',
-    welcome: 'مرحباً بعودتك!', welcomeSub: 'سجل دخولك للمتابعة.',
+  ar: { chats: 'المحادثات', contacts: 'جهات الاتصال', posts: 'تغريدة', settings: 'الإعدادات', search: 'البحث',
+    login: 'تسجيل الدخول', signup: 'إنشاء حساب', welcomeSub: 'سجل دخولك للمتابعة.',
     signupSub: 'انضم إلينا وابدأ الدردشة.', noAccount: 'ليس لديك حساب؟', haveAccount: 'لديك حساب؟',
-    createOne: 'أنشئ حساب', signIn: 'سجّل دخول', online: '● متصل', offline: '● غير متصل',
-    typing: 'يكتب الآن...', typeMessage: 'اكتب رسالة...', logout: 'تسجيل الخروج',
+    createOne: 'أنشئ حساب', signIn: 'سجّل دخول', online: '● متصل', logout: 'تسجيل الخروج',
     editProfile: 'تعديل الاسم والبائو', privateAccount: 'حساب خاص', darkMode: 'الوضع الليلي',
-    notifications: 'الإشعارات', blocked: 'الحسابات المحظورة', deleteAccount: 'حذف الحساب',
-    language: 'اللغة', upcoming: 'قريباً!'
-  },
-  en: {
-    chats: 'Chats', contacts: 'Contacts', posts: 'Posts', settings: 'Settings', search: 'Search',
-    login: 'Sign In', signup: 'Sign Up', email: 'Email', password: 'Password',
-    username: 'Username', displayName: 'Display Name', createAccount: 'Create Account',
-    welcome: 'Welcome back!', welcomeSub: 'Sign in to continue.',
+    notifications: 'الإشعارات', blocked: 'الحسابات المحظورة', language: 'اللغة', upcoming: 'قريباً!' },
+  en: { chats: 'Chats', contacts: 'Contacts', posts: 'Posts', settings: 'Settings', search: 'Search',
+    login: 'Sign In', signup: 'Sign Up', welcomeSub: 'Sign in to continue.',
     signupSub: 'Join us and start chatting.', noAccount: "Don't have an account?", haveAccount: 'Have an account?',
-    createOne: 'Create one', signIn: 'Sign in', online: '● Online', offline: '● Offline',
-    typing: 'typing...', typeMessage: 'Type a message...', logout: 'Logout',
+    createOne: 'Create one', signIn: 'Sign in', online: '● Online', logout: 'Logout',
     editProfile: 'Edit name & bio', privateAccount: 'Private account', darkMode: 'Dark mode',
-    notifications: 'Notifications', blocked: 'Blocked accounts', deleteAccount: 'Delete account',
-    language: 'Language', upcoming: 'Coming soon!'
-  }
+    notifications: 'Notifications', blocked: 'Blocked accounts', language: 'Language', upcoming: 'Coming soon!' }
 };
 function t(k) { return T[currentLang][k] || k; }
 
-/* ============ HELPERS ============ */
 async function hashPass(s) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
@@ -555,7 +496,6 @@ async function touchLastSeen() {
   try { await sb.from('profiles').update({ last_seen: new Date().toISOString() }).eq('id', currentUser.id); } catch(e){}
 }
 
-/* ============ INIT ============ */
 setTimeout(async () => {
   document.getElementById('splash').classList.add('hide');
   const savedLang = localStorage.getItem('inet_lang');
@@ -576,7 +516,6 @@ setTimeout(async () => {
   document.getElementById('authScreen').classList.add('show');
 }, 2200);
 
-/* ============ AUTH ============ */
 function toggleAuthMode() {
   authMode = authMode === 'login' ? 'signup' : 'login';
   const t1 = document.getElementById('authTitle');
@@ -603,47 +542,37 @@ async function handleAuth(e) {
   btn.disabled = true; const old = btn.innerText; btn.innerText = '...';
   const email = document.getElementById('email').value.trim().toLowerCase();
   const password = document.getElementById('password').value;
-
   try {
     if (authMode === 'signup') {
       const username = document.getElementById('username').value.trim().toLowerCase();
       const display_name = document.getElementById('displayName').value.trim();
       if (!username) throw new Error('Username required');
       if (password.length < 6) throw new Error('Password too short');
-
       const { data: existingEmail } = await sb.from('profiles').select('id').eq('email', email).maybeSingle();
-      if (existingEmail) throw new Error(currentLang === 'ar' ? 'البريد مستخدم' : 'Email taken');
+      if (existingEmail) throw new Error('Email taken');
       const { data: existingUser } = await sb.from('profiles').select('id').eq('username', username).maybeSingle();
-      if (existingUser) throw new Error(currentLang === 'ar' ? 'اسم المستخدم محجوز' : 'Username taken');
-
+      if (existingUser) throw new Error('Username taken');
       const hashed = await hashPass(password);
-      const { data, error } = await sb.from('profiles').insert({
-        email, username, display_name, password: hashed
-      }).select().single();
+      const { data, error } = await sb.from('profiles').insert({ email, username, display_name, password: hashed }).select().single();
       if (error) throw error;
-
       currentUser = { id: data.id, email: data.email };
       currentProfile = data;
       localStorage.setItem('inet_user', JSON.stringify({ user: currentUser, profile: currentProfile }));
-      showToast(currentLang === 'ar' ? '✓ تم إنشاء الحساب' : '✓ Account created', 'success');
+      showToast('✓ تم إنشاء الحساب', 'success');
       setTimeout(showApp, 400);
     } else {
       const hashed = await hashPass(password);
       const { data, error } = await sb.from('profiles').select().eq('email', email).eq('password', hashed).maybeSingle();
       if (error) throw error;
-      if (!data) throw new Error(currentLang === 'ar' ? 'بيانات خاطئة' : 'Invalid credentials');
-
+      if (!data) throw new Error('بيانات خاطئة');
       currentUser = { id: data.id, email: data.email };
       currentProfile = data;
       localStorage.setItem('inet_user', JSON.stringify({ user: currentUser, profile: currentProfile }));
       showToast('✓', 'success');
       setTimeout(showApp, 400);
     }
-  } catch (err) {
-    showToast(err.message || 'Error', 'error');
-  } finally {
-    btn.disabled = false; btn.innerText = old;
-  }
+  } catch (err) { showToast(err.message || 'Error', 'error'); }
+  finally { btn.disabled = false; btn.innerText = old; }
 }
 
 function showApp() {
@@ -665,7 +594,6 @@ function logout() {
   showToast('Bye 👋', 'success');
 }
 
-/* ============ NAV ============ */
 function switchMainTab(tab) {
   currentTab = tab;
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -680,7 +608,15 @@ function switchMainTab(tab) {
   else if (tab === 'settings') renderSettings();
 }
 
-/* ============ USERS ============ */
+function escapeHtml(s) {
+  return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function isUserOnline(u) {
+  if (!u.last_seen) return false;
+  return (Date.now() - new Date(u.last_seen).getTime()) < 5 * 60 * 1000;
+}
+
 function userCardHTML(u) {
   const init = (u.display_name || u.username || '?').charAt(0).toUpperCase();
   const online = isUserOnline(u);
@@ -696,16 +632,6 @@ function openChatFromCard(el) {
   openChatWith(u);
 }
 
-function isUserOnline(u) {
-  if (!u.last_seen) return false;
-  const diff = Date.now() - new Date(u.last_seen).getTime();
-  return diff < 5 * 60 * 1000;
-}
-
-function escapeHtml(s) {
-  return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
-
 async function loadChats() {
   const c = document.getElementById('mainContainer');
   c.innerHTML = '<div class="section-title">' + t('chats') + '</div><div class="loader-dots"><span></span><span></span><span></span></div>';
@@ -714,11 +640,10 @@ async function loadChats() {
     if (error) throw error;
     const users = data || [];
     if (!users.length) {
-      c.innerHTML = '<div class="section-title">' + t('chats') + '</div><div class="empty">' +
-        (currentLang === 'ar' ? 'مازال ما عندك حتى دردشة.<br>روح لـ جهات الاتصال.' : 'No chats yet.<br>Go to contacts.') + '</div>';
+      c.innerHTML = '<div class="section-title">' + t('chats') + '</div><div class="empty">مازال ما عندك حتى دردشة.<br>روح لـ جهات الاتصال.</div>';
       return;
     }
-    let html = '<div class="section-title">' + (currentLang === 'ar' ? 'ابدا محادثة مع' : 'Start chat with') + '</div>';
+    let html = '<div class="section-title">ابدا محادثة مع</div>';
     users.forEach(u => { html += userCardHTML(u); });
     c.innerHTML = html;
   } catch(e) { c.innerHTML = '<div class="empty">Error: ' + escapeHtml(e.message) + '</div>'; }
@@ -732,8 +657,7 @@ async function loadContacts() {
     if (error) throw error;
     const users = data || [];
     if (!users.length) {
-      c.innerHTML = '<div class="section-title">' + t('contacts') + '</div><div class="empty">' +
-        (currentLang === 'ar' ? 'ما كاينش مستخدمين.' : 'No users.') + '</div>';
+      c.innerHTML = '<div class="section-title">' + t('contacts') + '</div><div class="empty">ما كاينش مستخدمين.</div>';
       return;
     }
     let html = '<div class="section-title">' + t('contacts') + ' (' + users.length + ')</div>';
@@ -745,7 +669,7 @@ async function loadContacts() {
 function renderSearchPage() {
   const c = document.getElementById('mainContainer');
   c.innerHTML = '<div class="search-box">' +
-    '<input type="text" id="searchInput" placeholder="' + (currentLang === 'ar' ? 'ابحث...' : 'Search...') + '" oninput="doSearch()">' +
+    '<input type="text" id="searchInput" placeholder="ابحث..." oninput="doSearch()">' +
     '<svg class="search-ico" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>' +
     '</div><div id="searchResults"><div class="empty">🔍</div></div>';
 }
@@ -761,11 +685,10 @@ function doSearch() {
     try {
       const { data, error } = await sb.from('profiles').select('*')
         .neq('id', currentUser.id)
-        .or('username.ilike.%' + q + '%,display_name.ilike.%' + q + '%')
-        .limit(30);
+        .or('username.ilike.%' + q + '%,display_name.ilike.%' + q + '%').limit(30);
       if (error) throw error;
       const users = data || [];
-      if (!users.length) { box.innerHTML = '<div class="empty">' + (currentLang === 'ar' ? 'ما لقيناش' : 'No results') + '</div>'; return; }
+      if (!users.length) { box.innerHTML = '<div class="empty">ما لقيناش</div>'; return; }
       let html = '<div class="section-title">' + users.length + '</div>';
       users.forEach(u => { html += userCardHTML(u); });
       box.innerHTML = html;
@@ -773,12 +696,10 @@ function doSearch() {
   }, 350);
 }
 
-/* ============ CHAT ============ */
 async function openChatWith(otherUser) {
   currentChatUser = otherUser;
   document.getElementById('chatUserName').innerText = otherUser.display_name || otherUser.username;
   document.getElementById('bottomBar').style.display = 'none';
-
   try {
     const [a, b] = currentUser.id < otherUser.id ? [currentUser.id, otherUser.id] : [otherUser.id, currentUser.id];
     let { data: existing, error: e1 } = await sb.from('chats').select().eq('user1', a).eq('user2', b).maybeSingle();
@@ -812,8 +733,7 @@ function closeChat() {
 async function loadMessages() {
   if (!currentChatId) return;
   try {
-    const { data, error } = await sb.from('messages')
-      .select('*').eq('chat_id', currentChatId).order('created_at', { ascending: true });
+    const { data, error } = await sb.from('messages').select('*').eq('chat_id', currentChatId).order('created_at', { ascending: true });
     if (error) throw error;
     const msgs = data || [];
     if (msgs.length === lastMsgCount) return;
@@ -821,12 +741,12 @@ async function loadMessages() {
     const box = document.getElementById('chatMessages');
     box.innerHTML = '';
     if (!msgs.length) {
-      box.innerHTML = '<div class="empty">' + (currentLang === 'ar' ? 'ابدا المحادثة 👋' : 'Start chatting 👋') + '</div>';
+      box.innerHTML = '<div class="empty">ابدا المحادثة 👋</div>';
       return;
     }
     msgs.forEach(m => {
       const mine = m.sender_id === currentUser.id;
-      const time = m.created_at ? new Date(m.created_at).toLocaleTimeString(currentLang === 'ar' ? 'ar-DZ' : 'en-US', {hour:'2-digit', minute:'2-digit'}) : '';
+      const time = m.created_at ? new Date(m.created_at).toLocaleTimeString('ar-DZ', {hour:'2-digit', minute:'2-digit'}) : '';
       const div = document.createElement('div');
       div.className = 'msg ' + (mine ? 'me' : 'other');
       div.innerHTML = (mine ? '<button class="msg-del" onclick="deleteMsg(' + m.id + ')">✕</button>' : '') +
@@ -843,30 +763,16 @@ async function sendMessage() {
   if (!text || !currentChatId) return;
   input.value = '';
   try {
-    const { error } = await sb.from('messages').insert({
-      chat_id: currentChatId, sender_id: currentUser.id, content: text
-    });
+    const { error } = await sb.from('messages').insert({ chat_id: currentChatId, sender_id: currentUser.id, content: text });
     if (error) throw error;
     lastMsgCount = 0; loadMessages();
   } catch(e) { showToast(e.message || 'Error', 'error'); }
 }
 
 async function deleteMsg(id) {
-  try {
-    await sb.from('messages').delete().eq('id', id);
-    lastMsgCount = 0; loadMessages();
-  } catch(e) {}
+  try { await sb.from('messages').delete().eq('id', id); lastMsgCount = 0; loadMessages(); } catch(e) {}
 }
 
-function notifyTyping() {
-  const el = document.getElementById('chatUserStatus');
-  if (el) { el.classList.add('typing'); el.innerText = t('typing'); }
-  setTimeout(() => {
-    if (el) { el.classList.remove('typing'); el.innerText = t('online'); }
-  }, 2000);
-}
-
-/* ============ NOTES ============ */
 async function loadNote() {
   if (!currentChatId) return;
   try {
@@ -879,7 +785,7 @@ async function loadNote() {
     } else {
       banner.innerHTML = '<div class="chat-note-banner" onclick="openNoteModal()" style="opacity:0.6;">' +
         '<svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
-        '<div class="chat-note-text">' + (currentLang === 'ar' ? 'أضف نوت للمحادثة' : 'Add note') + '</div></div>';
+        '<div class="chat-note-text">أضف نوت للمحادثة</div></div>';
     }
   } catch(e){}
 }
@@ -898,36 +804,24 @@ async function saveNote() {
   const content = document.getElementById('noteContent').value.trim();
   if (!content) return;
   try {
-    await sb.from('chat_notes').upsert({
-      chat_id: currentChatId,
-      content,
-      updated_by: currentUser.id,
-      updated_at: new Date().toISOString()
-    }, { onConflict: 'chat_id' });
+    await sb.from('chat_notes').upsert({ chat_id: currentChatId, content, updated_by: currentUser.id, updated_at: new Date().toISOString() }, { onConflict: 'chat_id' });
     closeNoteModal(); loadNote(); showToast('✓', 'success');
   } catch(e) { showToast(e.message, 'error'); }
 }
 
 async function deleteNote() {
-  try {
-    await sb.from('chat_notes').delete().eq('chat_id', currentChatId);
-    closeNoteModal(); loadNote(); showToast('✓', 'success');
-  } catch(e) {}
+  try { await sb.from('chat_notes').delete().eq('chat_id', currentChatId); closeNoteModal(); loadNote(); showToast('✓', 'success'); } catch(e) {}
 }
 
-/* ============ POSTS ============ */
 async function loadPosts() {
   const c = document.getElementById('mainContainer');
   c.innerHTML = '<div class="section-title">' + t('posts') + '</div><div class="loader-dots"><span></span><span></span><span></span></div>';
   try {
-    const { data, error } = await sb.from('posts')
-      .select('*, profiles(username, display_name)')
-      .order('created_at', { ascending: false }).limit(50);
+    const { data, error } = await sb.from('posts').select('*, profiles(username, display_name)').order('created_at', { ascending: false }).limit(50);
     if (error) throw error;
     const posts = data || [];
     if (!posts.length) {
-      c.innerHTML = '<div class="section-title">' + t('posts') + '</div><div class="empty">' +
-        (currentLang === 'ar' ? 'مازال ما كاين تغريدة.' : 'No posts yet.') + '</div>';
+      c.innerHTML = '<div class="section-title">' + t('posts') + '</div><div class="empty">مازال ما كاين تغريدة.</div>';
       return;
     }
     let html = '<div class="section-title">' + t('posts') + ' (' + posts.length + ')</div>';
@@ -935,7 +829,7 @@ async function loadPosts() {
       const prof = p.profiles || {};
       const name = prof.display_name || prof.username || 'User';
       const init = (name).charAt(0).toUpperCase();
-      const time = p.created_at ? new Date(p.created_at).toLocaleString(currentLang === 'ar' ? 'ar-DZ' : 'en-US') : '';
+      const time = p.created_at ? new Date(p.created_at).toLocaleString('ar-DZ') : '';
       const mine = p.user_id === currentUser.id;
       html += '<div class="post-card">' +
         '<div class="post-head"><div class="post-avatar">' + init + '</div>' +
@@ -943,7 +837,7 @@ async function loadPosts() {
         '<div class="post-time">' + time + '</div></div></div>' +
         '<div class="post-text">' + escapeHtml(p.content) + '</div>' +
         (p.image_url ? '<img src="' + escapeHtml(p.image_url) + '" class="post-image" onerror="this.style.display=\'none\'">' : '') +
-        (mine ? '<div class="post-actions"><button class="post-del" onclick="deletePost(' + p.id + ')">' + (currentLang === 'ar' ? 'حذف' : 'Delete') + '</button></div>' : '') +
+        (mine ? '<div class="post-actions"><button class="post-del" onclick="deletePost(' + p.id + ')">حذف</button></div>' : '') +
         '</div>';
     });
     c.innerHTML = html;
@@ -960,22 +854,19 @@ function closePostModal() { document.getElementById('postModal').classList.remov
 async function publishPost() {
   const content = document.getElementById('postContent').value.trim();
   const image = document.getElementById('postImage').value.trim();
-  if (!content) return showToast(currentLang === 'ar' ? 'اكتب شي' : 'Write something', 'error');
+  if (!content) return showToast('اكتب شي', 'error');
   try {
-    const { error } = await sb.from('posts').insert({
-      user_id: currentUser.id, content, image_url: image || null
-    });
+    const { error } = await sb.from('posts').insert({ user_id: currentUser.id, content, image_url: image || null });
     if (error) throw error;
     closePostModal(); loadPosts(); showToast('✓', 'success');
   } catch(e) { showToast(e.message, 'error'); }
 }
 
 async function deletePost(id) {
-  if (!confirm(currentLang === 'ar' ? 'حذف؟' : 'Delete?')) return;
+  if (!confirm('حذف؟')) return;
   try { await sb.from('posts').delete().eq('id', id); loadPosts(); } catch(e) {}
 }
 
-/* ============ SETTINGS ============ */
 async function renderSettings() {
   const c = document.getElementById('mainContainer');
   try {
@@ -988,10 +879,10 @@ async function renderSettings() {
     '<div class="profile-big-avatar">' + init + '</div>' +
     '<div class="profile-display-name">' + escapeHtml(p.display_name || p.username || 'User') + '</div>' +
     '<div class="profile-username">@' + escapeHtml(p.username || 'user') + '</div>' +
-    '<div class="profile-bio">' + escapeHtml(p.bio || (currentLang === 'ar' ? 'لا يوجد بايو' : 'No bio')) + '</div>' +
+    '<div class="profile-bio">' + escapeHtml(p.bio || 'لا يوجد بايو') + '</div>' +
     '<button class="profile-edit-btn" onclick="openEditProfile()">✏️ ' + t('editProfile') + '</button>' +
 
-    '<div class="settings-group"><div class="settings-group-title">' + (currentLang === 'ar' ? 'الحساب' : 'Account') + '</div>' +
+    '<div class="settings-group"><div class="settings-group-title">الحساب</div>' +
     '<div class="setting-row" onclick="openEditProfile()">' +
     '<div class="setting-row-left"><div class="setting-row-icon"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>' +
     '<div class="setting-row-label">' + t('editProfile') + '</div></div>' +
@@ -1009,22 +900,14 @@ async function renderSettings() {
     '<button class="lang-opt ' + (currentLang === 'en' ? 'active' : '') + '" onclick="changeLang(\'en\')">English</button>' +
     '</div></div></div>' +
 
-    '<div class="settings-group"><div class="settings-group-title">' + (currentLang === 'ar' ? 'التطبيق' : 'App') + '</div>' +
+    '<div class="settings-group"><div class="settings-group-title">التطبيق</div>' +
     '<div class="setting-row" onclick="toggleDarkMode()">' +
     '<div class="setting-row-left"><div class="setting-row-icon"><svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></div>' +
     '<div class="setting-row-label">' + t('darkMode') + '</div></div>' +
     '<div class="setting-toggle ' + (document.body.classList.contains('light-mode') ? '' : 'on') + '" id="darkToggle"></div></div>' +
-    '<div class="setting-row" onclick="toggleNotifications()">' +
-    '<div class="setting-row-left"><div class="setting-row-icon"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>' +
-    '<div class="setting-row-label">' + t('notifications') + '</div></div>' +
-    '<div class="setting-toggle on" id="notifToggle"></div></div>' +
     '</div>' +
 
-    '<div class="settings-group"><div class="settings-group-title">' + (currentLang === 'ar' ? 'الأمان' : 'Security') + '</div>' +
-    '<div class="setting-row danger" onclick="showToast(t(\'upcoming\'),\'success\')">' +
-    '<div class="setting-row-left"><div class="setting-row-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg></div>' +
-    '<div class="setting-row-label">' + t('blocked') + '</div></div>' +
-    '<div class="setting-row-value">›</div></div>' +
+    '<div class="settings-group"><div class="settings-group-title">الأمان</div>' +
     '<div class="setting-row danger" onclick="logout()">' +
     '<div class="setting-row-left"><div class="setting-row-icon"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>' +
     '<div class="setting-row-label">' + t('logout') + '</div></div>' +
@@ -1038,7 +921,6 @@ function changeLang(lang) {
   document.body.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
   document.getElementById('pageTitle').innerText = t(currentTab);
   renderSettings();
-  showToast('✓', 'success');
 }
 
 function openEditProfile() {
@@ -1054,9 +936,7 @@ async function saveProfile() {
   const bio = document.getElementById('editBio').value.trim();
   if (!display_name) return;
   try {
-    const { data, error } = await sb.from('profiles').update({
-      display_name, bio, is_private: profileData.is_private || false
-    }).eq('id', currentUser.id).select().single();
+    const { data, error } = await sb.from('profiles').update({ display_name, bio, is_private: profileData.is_private || false }).eq('id', currentUser.id).select().single();
     if (error) throw error;
     profileData = data; currentProfile = data;
     localStorage.setItem('inet_user', JSON.stringify({ user: currentUser, profile: currentProfile }));
@@ -1069,9 +949,7 @@ async function togglePrivacy() {
   profileData.is_private = !profileData.is_private;
   const el = document.getElementById('privToggle');
   if (el) el.classList.toggle('on', profileData.is_private);
-  try {
-    await sb.from('profiles').update({ is_private: profileData.is_private }).eq('id', currentUser.id);
-  } catch(e) {}
+  try { await sb.from('profiles').update({ is_private: profileData.is_private }).eq('id', currentUser.id); } catch(e) {}
 }
 
 function toggleDarkMode() {
@@ -1082,14 +960,6 @@ function toggleDarkMode() {
   if (t2) t2.classList.toggle('on', !isLight);
 }
 
-function toggleNotifications() {
-  const t2 = document.getElementById('notifToggle');
-  if (!t2) return;
-  const isOn = t2.classList.toggle('on');
-  localStorage.setItem('inet_notif', isOn ? 'on' : 'off');
-}
-
-/* ============ USER PROFILE MODAL ============ */
 function openUserProfile(user) {
   if (!user) return;
   viewingProfile = user;
@@ -1097,7 +967,7 @@ function openUserProfile(user) {
   document.getElementById('upAvatar').innerText = init;
   document.getElementById('upName').innerText = user.display_name || user.username;
   document.getElementById('upUsername').innerText = '@' + user.username;
-  document.getElementById('upBio').innerText = user.bio || (currentLang === 'ar' ? 'لا يوجد بايو' : 'No bio');
+  document.getElementById('upBio').innerText = user.bio || 'لا يوجد بايو';
   document.getElementById('userProfileModal').classList.add('show');
 }
 function closeUserProfile() {
@@ -1111,7 +981,6 @@ function startChatFromProfile() {
   openChatWith(u);
 }
 
-/* ============ TOAST ============ */
 function showToast(msg, type) {
   type = type || 'success';
   const el = document.getElementById('toast');
