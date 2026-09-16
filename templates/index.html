@@ -2,112 +2,423 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>iNetchat — دردشة خاصة</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800;900&family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        :root {
+            --bg: #0b0b0f;
+            --card: #16161c;
+            --border: rgba(255, 255, 255, 0.08);
+            --text: #fff;
+            --subtext: #8e8e93;
+            --accent: #0a84ff;
+            --accent2: #0062d2;
+            --danger: #ff453a;
+            --success: #32d74b;
+        }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Cairo', sans-serif;
-            background: #0b0b0f;
-            color: #fff;
+            font-family: 'Cairo', 'Poppins', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
-            text-align: center;
             padding: 20px;
             direction: rtl;
         }
         
-        .container { max-width: 420px; }
+        /* Splash Screen */
+        #splash {
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.6s ease;
+        }
         
-        .logo {
+        #splash.hide { opacity: 0; pointer-events: none; }
+        
+        .splash-logo {
             width: 100px;
             height: 100px;
             border-radius: 28px;
-            background: linear-gradient(135deg, #0a84ff, #0062d2);
-            display: inline-flex;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 24px;
             box-shadow: 0 15px 40px rgba(10, 132, 255, 0.4);
+            animation: pulse 2s ease-in-out infinite;
         }
         
-        .logo svg {
-            width: 55px;
-            height: 55px;
-            fill: #fff;
-        }
+        .splash-logo svg { width: 55px; height: 55px; fill: #fff; }
         
-        h1 {
-            font-size: 42px;
+        .splash-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 36px;
             font-weight: 900;
-            background: linear-gradient(135deg, #0a84ff, #5ac8fa);
+            margin-top: 24px;
+            letter-spacing: -1px;
+            background: linear-gradient(135deg, var(--accent), #5ac8fa);
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 12px;
-            letter-spacing: -1px;
         }
         
-        .tagline {
-            color: #8e8e93;
-            font-size: 15px;
-            line-height: 1.7;
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+        
+        /* Auth Container */
+        #authScreen {
+            display: none;
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        #authScreen.show { display: block; animation: fadeUp 0.5s ease; }
+        
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .auth-header {
+            text-align: center;
             margin-bottom: 32px;
         }
         
-        .badge {
-            display: inline-block;
-            background: rgba(50, 215, 75, 0.12);
-            color: #32d74b;
-            padding: 10px 20px;
+        .auth-header .logo {
+            width: 70px;
+            height: 70px;
             border-radius: 22px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            box-shadow: 0 12px 30px rgba(10, 132, 255, 0.4);
+        }
+        
+        .auth-header .logo svg { width: 38px; height: 38px; fill: #fff; }
+        
+        .auth-title {
+            font-size: 26px;
+            font-weight: 900;
+            margin-bottom: 6px;
+            background: linear-gradient(135deg, var(--accent), #5ac8fa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .auth-sub {
+            color: var(--subtext);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        /* Forms */
+        .form-group {
+            margin-bottom: 14px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--subtext);
+            margin-bottom: 6px;
+        }
+        
+        .input {
+            width: 100%;
+            padding: 15px 16px;
+            background: var(--card);
+            border: 1.5px solid var(--border);
+            border-radius: 14px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.25s;
+        }
+        
+        .input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.12);
+        }
+        
+        .input::placeholder { color: var(--subtext); }
+        
+        .btn-primary {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: #fff;
+            border: none;
+            border-radius: 14px;
+            font-weight: 800;
+            font-size: 15px;
+            font-family: inherit;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(10, 132, 255, 0.4);
+            transition: transform 0.2s;
+            margin-top: 8px;
+        }
+        
+        .btn-primary:active { transform: scale(0.97); }
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+        
+        .switch-text {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 13px;
+            color: var(--subtext);
+        }
+        
+        .switch-text button {
+            background: none;
+            border: none;
+            color: var(--accent);
+            font-weight: 800;
+            font-family: inherit;
+            font-size: 13px;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        
+        /* Toast */
+        #toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px 22px;
             font-size: 13px;
             font-weight: 700;
+            z-index: 10000;
+            transition: transform 0.3s ease;
+            max-width: 90%;
+            text-align: center;
+        }
+        
+        #toast.show { transform: translateX(-50%) translateY(0); }
+        #toast.success { border-color: var(--success); color: var(--success); }
+        #toast.error { border-color: var(--danger); color: var(--danger); }
+        
+        /* Welcome Screen (after login) */
+        #welcomeScreen {
+            display: none;
+            text-align: center;
+            max-width: 400px;
+        }
+        
+        #welcomeScreen.show { display: block; animation: fadeUp 0.5s ease; }
+        
+        .welcome-badge {
+            display: inline-block;
+            background: rgba(50, 215, 75, 0.12);
+            color: var(--success);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 800;
             border: 1px solid rgba(50, 215, 75, 0.3);
-        }
-        
-        .loader {
-            display: flex;
-            gap: 8px;
-            justify-content: center;
-            margin-top: 28px;
-        }
-        
-        .loader span {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #0a84ff;
-            animation: pulse 1.4s ease-in-out infinite;
-        }
-        
-        .loader span:nth-child(2) { animation-delay: 0.2s; background: #ff453a; }
-        .loader span:nth-child(3) { animation-delay: 0.4s; background: #ff9f0a; }
-        
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 0.6; }
-            50% { transform: scale(1.4); opacity: 1; }
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="logo">
-            <svg viewBox="0 0 24 24">
-                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
-            </svg>
+
+    <!-- Splash Screen -->
+    <div id="splash">
+        <div class="splash-logo">
+            <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
         </div>
-        <h1>iNetchat</h1>
-        <p class="tagline">تطبيق الدردشة الخاص بك، مع التركيز على الخصوصية والبساطة.</p>
-        <div class="badge">✓ قيد التطوير</div>
-        <div class="loader">
-            <span></span>
-            <span></span>
-            <span></span>
+        <div class="splash-title">iNetchat</div>
+    </div>
+
+    <!-- Auth Screen -->
+    <div id="authScreen">
+        <div class="auth-header">
+            <div class="logo">
+                <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+            </div>
+            <h1 class="auth-title" id="authTitle">تسجيل الدخول</h1>
+            <p class="auth-sub" id="authSub">مرحباً بعودتك! سجل دخولك للمتابعة.</p>
+        </div>
+
+        <form id="authForm" onsubmit="handleAuth(event)">
+            <div class="form-group" id="usernameGroup" style="display:none;">
+                <label>اسم المستخدم</label>
+                <input type="text" id="username" class="input" placeholder="مثال: ahmed_dz" autocomplete="username">
+            </div>
+            
+            <div class="form-group" id="displayNameGroup" style="display:none;">
+                <label>الاسم الكامل</label>
+                <input type="text" id="displayName" class="input" placeholder="مثال: أحمد بن علي" autocomplete="name">
+            </div>
+            
+            <div class="form-group">
+                <label>البريد الإلكتروني</label>
+                <input type="email" id="email" class="input" placeholder="example@gmail.com" required autocomplete="email">
+            </div>
+            
+            <div class="form-group">
+                <label>كلمة المرور</label>
+                <input type="password" id="password" class="input" placeholder="6 أحرف على الأقل" required autocomplete="current-password">
+            </div>
+            
+            <button type="submit" class="btn-primary" id="submitBtn">تسجيل الدخول</button>
+        </form>
+
+        <div class="switch-text">
+            <span id="switchText">ليس لديك حساب؟</span>
+            <button onclick="toggleAuthMode()" id="switchBtn">أنشئ حساب</button>
         </div>
     </div>
+
+    <!-- Welcome Screen (after login) -->
+    <div id="welcomeScreen">
+        <div class="logo" style="width:80px;height:80px;border-radius:24px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:inline-flex;align-items:center;justify-content:center;box-shadow:0 15px 40px rgba(10,132,255,0.4);">
+            <svg viewBox="0 0 24 24" style="width:44px;height:44px;fill:#fff;"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+        </div>
+        <h1 style="margin-top:20px;font-size:24px;font-weight:900;">مرحباً <span id="welcomeName"></span>!</h1>
+        <p style="color:var(--subtext);margin-top:8px;">راك مسجل دخول بنجاح</p>
+        <div class="welcome-badge">✓ الدردشة جاهزة (الخطوة القادمة)</div>
+        <button class="btn-primary" onclick="logout()" style="margin-top:24px;background:linear-gradient(135deg,var(--danger),#d70015);box-shadow:0 8px 24px rgba(255,69,58,0.4);">تسجيل الخروج</button>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast"></div>
+
+    <script>
+        let authMode = 'login'; // login | signup
+
+        // Splash -> Auth
+        setTimeout(() => {
+            document.getElementById('splash').classList.add('hide');
+            document.getElementById('authScreen').classList.add('show');
+        }, 2200);
+
+        // Check if user is logged in (from localStorage)
+        window.addEventListener('DOMContentLoaded', () => {
+            const user = localStorage.getItem('inet_user');
+            if (user) {
+                try {
+                    const u = JSON.parse(user);
+                    showWelcome(u);
+                } catch(e) {}
+            }
+        });
+
+        function toggleAuthMode() {
+            authMode = authMode === 'login' ? 'signup' : 'login';
+            const title = document.getElementById('authTitle');
+            const sub = document.getElementById('authSub');
+            const btn = document.getElementById('submitBtn');
+            const switchText = document.getElementById('switchText');
+            const switchBtn = document.getElementById('switchBtn');
+            const usernameGroup = document.getElementById('usernameGroup');
+            const displayNameGroup = document.getElementById('displayNameGroup');
+
+            if (authMode === 'signup') {
+                title.innerText = 'إنشاء حساب';
+                sub.innerText = 'انضم إلينا وابدأ الدردشة مع أصدقائك.';
+                btn.innerText = 'إنشاء حساب';
+                switchText.innerText = 'لديك حساب بالفعل؟';
+                switchBtn.innerText = 'سجّل دخول';
+                usernameGroup.style.display = 'block';
+                displayNameGroup.style.display = 'block';
+            } else {
+                title.innerText = 'تسجيل الدخول';
+                sub.innerText = 'مرحباً بعودتك! سجل دخولك للمتابعة.';
+                btn.innerText = 'تسجيل الدخول';
+                switchText.innerText = 'ليس لديك حساب؟';
+                switchBtn.innerText = 'أنشئ حساب';
+                usernameGroup.style.display = 'none';
+                displayNameGroup.style.display = 'none';
+            }
+        }
+
+        async function handleAuth(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerText = '...جاري';
+
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+
+            const endpoint = authMode === 'login' ? '/api/auth/login' : '/api/auth/signup';
+            const payload = { email, password };
+
+            if (authMode === 'signup') {
+                payload.username = document.getElementById('username').value.trim();
+                payload.display_name = document.getElementById('displayName').value.trim();
+            }
+
+            try {
+                const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    showToast(data.error || 'حدث خطأ', 'error');
+                } else {
+                    if (authMode === 'signup') {
+                        showToast('تم إنشاء الحساب! سجل دخولك الآن.', 'success');
+                        toggleAuthMode();
+                    } else {
+                        showToast('مرحباً ' + (data.profile?.display_name || data.user.email), 'success');
+                        localStorage.setItem('inet_user', JSON.stringify(data.user));
+                        setTimeout(() => showWelcome(data.user, data.profile), 800);
+                    }
+                }
+            } catch (err) {
+                showToast('فشل الاتصال بالسيرفر', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = authMode === 'login' ? 'تسجيل الدخول' : 'إنشاء حساب';
+            }
+        }
+
+        function showWelcome(user, profile) {
+            document.getElementById('authScreen').classList.remove('show');
+            document.getElementById('welcomeScreen').classList.add('show');
+            const name = profile?.display_name || profile?.username || user.email?.split('@')[0] || 'صديقي';
+            document.getElementById('welcomeName').innerText = name;
+        }
+
+        function logout() {
+            localStorage.removeItem('inet_user');
+            document.getElementById('welcomeScreen').classList.remove('show');
+            document.getElementById('authScreen').classList.add('show');
+            showToast('تم تسجيل الخروج', 'success');
+        }
+
+        function showToast(msg, type = 'success') {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.className = type + ' show';
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+    </script>
 </body>
 </html>
