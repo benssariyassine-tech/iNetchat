@@ -124,6 +124,7 @@ svg{display:block}
   margin-top:32px;text-align:center;color:#6e6e73;
   font-size:11px;letter-spacing:1px;
 }
+
 /* ============ APP HEADER ============ */
 #appScreen{display:none}
 #appScreen.show{display:block}
@@ -229,7 +230,24 @@ svg{display:block}
 }
 .empty-title{font-weight:700;color:var(--text);font-size:15px;margin-bottom:4px}
 
-/* ============ STORIES ROW (Instagram) ============ */
+/* ============ TOAST ============ */
+#toast{
+  position:fixed;
+  bottom:100px;left:50%;
+  transform:translateX(-50%) translateY(20px);
+  background:#262626;color:#fff;
+  padding:12px 22px;border-radius:24px;
+  font-size:13px;font-weight:600;
+  z-index:10000;
+  opacity:0;pointer-events:none;
+  transition:all .25s ease;
+  max-width:90%;text-align:center;
+  box-shadow:0 8px 24px rgba(0,0,0,.4);
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.error{background:var(--red)}
+#toast.success{background:var(--green)}
+  /* ============ STORIES ROW (Instagram) ============ */
 .stories-row{
   display:flex;gap:14px;
   padding:14px 16px 18px;
@@ -496,7 +514,6 @@ svg{display:block}
 @keyframes heartPop{
   0%{transform:scale(1)}50%{transform:scale(1.35)}100%{transform:scale(1)}
 }
-.feed-action-save{margin-right:auto}
 .feed-likes{
   padding:0 14px;font-size:13px;font-weight:700;margin-bottom:4px;
 }
@@ -640,7 +657,7 @@ svg{display:block}
   background:var(--card-2);color:var(--text);
 }
 .suggestion-btn:active{opacity:.7}
-/* ============ CHAT WINDOW (Instagram Style) ============ */
+  /* ============ CHAT WINDOW (Instagram Style) ============ */
 #chatWindow{
   position:fixed;inset:0;z-index:1500;
   background:var(--bg);
@@ -686,13 +703,24 @@ svg{display:block}
   color:#fff;font-weight:800;font-size:15px;
 }
 .chat-header-avatar img{width:100%;height:100%;object-fit:cover}
-.chat-header-text{min-width:0;flex:1;display:flex;flex-direction:column;justify-content:center}
-.choneat-header-name{
- ; font-size:14userpx;font-weight-select:700;
-:n  white-spaceone:nowrap;overflow:hidden;text-overflow:ellipsis;
+.chat-header-text{
+  min-width:0;flex:1;
+  display:flex;flex-direction:column;justify-content:center;
+}
+.chat-header-name{
+  font-size:14px;
+  font-weight:700;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
   line-height:1.2;
 }
-.chat-header-status{font-size:11px;color:var(--text-2);line-height:1.2;margin-top:1px}
+.chat-header-status{
+  font-size:11px;
+  color:var(--text-2);
+  line-height:1.2;
+  margin-top:1px;
+}
 .chat-header-status.online{color:var(--green)}
 
 /* أزرار الاتصال في الهيدر */
@@ -740,7 +768,7 @@ svg{display:block}
 }
 .msg-avatar img{width:100%;height:100%;object-fit:cover}
 
-/* 🔑 العمود اللي فيه التفاعلات + البابل */
+/* العمود اللي فيه التفاعلات + البابل */
 .msg-col{
   display:flex;
   flex-direction:column;
@@ -751,7 +779,7 @@ svg{display:block}
 .msg-row.me .msg-col{align-items:flex-start}
 .msg-row.other .msg-col{align-items:flex-end}
 
-/* 🔑 البابل: حجم ديناميكي، ما يتمددش */
+/* البابل: حجم ديناميكي، ما يتمددش */
 .msg-bubble{
   max-width:100%;
   width:fit-content;
@@ -762,7 +790,8 @@ svg{display:block}
   word-wrap:break-word;
   word-break:break-word;
   position:relative;
-  -webkit-user-select:n;
+  -webkit-user-select:none;
+  user-select:none;
   transition:transform .12s,opacity .12s;
   cursor:pointer;
   display:flex;flex-direction:column;
@@ -892,7 +921,7 @@ svg{display:block}
 .input-inline-btn.send:disabled{opacity:.4}
 .input-inline-btn.send:disabled svg{stroke:var(--text-3)}
 
-/* فاصل عمودي قبل الميكروفون (كيما Instagram) */
+/* فاصل عمودي قبل الميكروفون */
 .input-divider{
   width:1px;height:20px;
   background:var(--border-2);
@@ -913,6 +942,71 @@ svg{display:block}
   stroke:var(--text);fill:none;stroke-width:2;
   stroke-linecap:round;stroke-linejoin:round;
 }
+
+/* ============ MESSAGE MENU (Long Press) ============ */
+#msgMenu{
+  position:fixed;inset:0;z-index:3000;
+  background:rgba(0,0,0,.35);
+  backdrop-filter:blur(3px);
+  -webkit-backdrop-filter:blur(3px);
+  display:none;
+}
+#msgMenu.show{display:block;animation:fadeIn .15s}
+.reactions-bar{
+  position:absolute;
+  background:var(--card);
+  border-radius:28px;
+  padding:6px 10px;
+  display:flex;gap:4px;
+  box-shadow:0 8px 28px rgba(0,0,0,.4);
+  animation:popIn .2s ease;
+  border:1px solid var(--border);
+}
+.reaction-btn{
+  width:40px;height:40px;
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;
+  cursor:pointer;
+  transition:transform .15s,background .15s;
+}
+.reaction-btn:active{
+  transform:scale(1.35);
+  background:var(--card-2);
+}
+.msg-menu-popup{
+  position:absolute;
+  background:var(--card);
+  border-radius:14px;
+  padding:4px;
+  box-shadow:0 10px 40px rgba(0,0,0,.4);
+  min-width:200px;
+  animation:popIn .2s ease;
+  overflow:hidden;
+  border:1px solid var(--border);
+}
+@keyframes popIn{
+  from{transform:scale(.8);opacity:0}
+  to{transform:scale(1);opacity:1}
+}
+.msg-menu-item{
+  display:flex;align-items:center;gap:14px;
+  padding:12px 14px;
+  border-radius:10px;
+  font-size:14px;font-weight:600;
+  cursor:pointer;
+  transition:background .12s;
+}
+.msg-menu-item:active{background:var(--card-2)}
+.msg-menu-item svg{
+  width:20px;height:20px;
+  stroke:currentColor;fill:none;stroke-width:1.8;
+  stroke-linecap:round;stroke-linejoin:round;
+  flex-shrink:0;
+}
+.msg-menu-item.danger{color:var(--red)}
+
+/* ============ FULL PAGE MODALS ============ */
 .fullpage{
   position:fixed;inset:0;z-index:2500;
   background:var(--bg);
@@ -1157,24 +1251,6 @@ svg{display:block}
   background:var(--card-2);color:var(--text);
 }
 
-/* ============ TOAST ============ */
-#toast{
-  position:fixed;
-  bottom:100px;left:50%;
-  transform:translateX(-50%) translateY(20px);
-  background:#262626;color:#fff;
-  padding:12px 22px;border-radius:24px;
-  font-size:13px;font-weight:600;
-  z-index:10000;
-  opacity:0;pointer-events:none;
-  transition:all .25s ease;
-  max-width:90%;text-align:center;
-  box-shadow:0 8px 24px rgba(0,0,0,.4);
-}
-#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-#toast.error{background:var(--red)}
-#toast.success{background:var(--green)}
-
 /* ============ REPORT MODAL ============ */
 .report-option{
   display:flex;align-items:center;gap:14px;
@@ -1192,7 +1268,7 @@ svg{display:block}
 }
 .report-option.danger{color:var(--red)}
 
-/* ============ FOLLOW LIST MODAL ============ */
+/* ============ FOLLOW LIST ============ */
 .follow-list-item{
   display:flex;align-items:center;gap:12px;
   padding:10px 16px;
@@ -1208,37 +1284,6 @@ svg{display:block}
 .follow-list-info{flex:1;min-width:0}
 .follow-list-name{font-size:13px;font-weight:700}
 .follow-list-username{font-size:12px;color:var(--text-2)}
-
-/* ============ DARK/LIGHT TOGGLE ============ */
-.theme-toggle{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:14px 16px;
-  border-bottom:1px solid var(--border);
-  cursor:pointer;
-}
-.theme-toggle svg{
-  width:22px;height:22px;
-  stroke:var(--text);fill:none;stroke-width:1.8;
-  stroke-linecap:round;stroke-linejoin:round;
-}
-.theme-toggle-label{flex:1;font-size:14px;margin:0 14px}
-.switch{
-  width:44px;height:26px;border-radius:13px;
-  background:var(--border-2);
-  position:relative;
-  transition:background .2s;
-  flex-shrink:0;
-}
-.switch.on{background:var(--blue)}
-.switch::after{
-  content:'';position:absolute;
-  top:2px;right:2px;
-  width:22px;height:22px;border-radius:50%;
-  background:#fff;
-  transition:transform .2s;
-  box-shadow:0 1px 3px rgba(0,0,0,.2);
-}
-.switch.on::after{transform:translateX(-18px)}
 
 /* ============ SETTINGS ============ */
 .settings-group{
@@ -1344,7 +1389,6 @@ svg{display:block}
 <!-- ============ MAIN APP ============ -->
 <div id="appScreen">
 
-  <!-- Header -->
   <header class="app-header">
     <div class="header-brand">i<span>N</span>etchat</div>
     <div class="header-actions">
@@ -1363,10 +1407,8 @@ svg{display:block}
     </div>
   </header>
 
-  <!-- Main content -->
   <main class="page" id="pageContent"></main>
 
-  <!-- FAB Create Post -->
   <button class="header-btn" id="fabCreate" onclick="openCreatePost()" style="display:none;position:fixed;bottom:76px;left:20px;width:52px;height:52px;border-radius:50%;background:var(--blue);color:#fff;box-shadow:0 4px 16px rgba(0,149,246,.45);z-index:900;align-items:center;justify-content:center;">
     <svg viewBox="0 0 24 24" style="width:26px;height:26px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;">
       <line x1="12" y1="5" x2="12" y2="19"/>
@@ -1421,11 +1463,29 @@ svg{display:block}
         <div class="chat-header-status" id="chatStatus">غير متصل</div>
       </div>
     </div>
+    <div class="chat-header-actions">
+      <button class="chat-header-action" onclick="startVoiceCall()" title="مكالمة صوتية">
+        <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      </button>
+      <button class="chat-header-action" onclick="startVideoCall()" title="مكالمة فيديو">
+        <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+      </button>
+      <button class="chat-header-action" onclick="flagChat()" title="تمييز">
+        <svg viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+      </button>
+    </div>
   </div>
 
   <div class="chat-messages" id="chatMessages"></div>
 
   <div class="chat-input">
+    <button class="chat-input-cam" onclick="pickChatImage()" title="إرسال صورة">
+      <svg viewBox="0 0 24 24">
+        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+        <circle cx="12" cy="13" r="4"/>
+      </svg>
+    </button>
+
     <div class="chat-input-field">
       <input
         type="text"
@@ -1434,18 +1494,49 @@ svg{display:block}
         onkeypress="if(event.key==='Enter')sendMessage()"
         oninput="onMsgInput()"
         autocomplete="off">
+      <span class="input-divider"></span>
+      <button class="input-inline-btn mic" onclick="startVoiceMessage()" title="رسالة صوتية">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+          <line x1="12" y1="19" x2="12" y2="23"/>
+          <line x1="8" y1="23" x2="16" y2="23"/>
+        </svg>
+      </button>
+      <button class="input-inline-btn" onclick="pickChatImage()" title="صورة">
+        <svg viewBox="0 0 24 24">
+          <rect x="3" y="3" width="18" height="18" rx="2"/>
+          <circle cx="8.5" cy="8.5" r="1.5"/>
+          <polyline points="21 15 16 10 5 21"/>
+        </svg>
+      </button>
+      <button class="input-inline-btn" onclick="pickSticker()" title="ملصق">
+        <svg viewBox="0 0 24 24">
+          <path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h6"/>
+          <path d="M14 4h6v6"/>
+          <path d="M21 3l-8 8"/>
+        </svg>
+      </button>
+      <button class="input-inline-btn send" id="sendBtn" onclick="sendMessage()" disabled title="إرسال">
+        <svg viewBox="0 0 24 24">
+          <line x1="22" y1="2" x2="11" y2="13"/>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+        </svg>
+      </button>
     </div>
-    <button class="chat-input-btn" id="sendBtn" onclick="sendMessage()" disabled>
+
+    <button class="chat-input-plus" onclick="openChatPlus()" title="المزيد">
       <svg viewBox="0 0 24 24">
-        <line x1="22" y1="2" x2="11" y2="13"/>
-        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="16"/>
+        <line x1="8" y1="12" x2="16" y2="12"/>
       </svg>
     </button>
+
+    <input type="file" id="chatImgInput" accept="image/*" style="display:none" onchange="sendChatImage(event)">
   </div>
 </div>
 
-
-<!-- ============ MESSAGE MENU (dynamic) ============ -->
 <div id="msgMenu"></div>
 
 
@@ -1632,7 +1723,6 @@ svg{display:block}
 
 <!-- ============ TOAST ============ -->
 <div id="toast"></div>
-
 <script>
 /* ============================================================
    CONFIG
@@ -1654,7 +1744,6 @@ let msgPolling = null;
 let notifPolling = null;
 let lastMsgCount = 0;
 let lastNotifCheck = new Date().toISOString();
-let longPressTimer = null;
 let currentMsgData = null;
 let editingMsgId = null;
 let selectedPostImage = null;
@@ -1694,15 +1783,6 @@ function initial(u){
   if(!u) return '?';
   const s = u.display_name || u.username || '?';
   return s.charAt(0).toUpperCase();
-}
-function avatarHTML(u, size){
-  if(!u) return '';
-  const sz = size || 44;
-  const st = `width:${sz}px;height:${sz}px`;
-  if(u.avatar_url){
-    return `<div class="notif-avatar" style="${st}"><img src="${esc(u.avatar_url)}" alt=""></div>`;
-  }
-  return `<div class="notif-avatar" style="${st};font-size:${Math.floor(sz*0.4)}px">${initial(u)}</div>`;
 }
 async function touchLastSeen(){
   if(!currentUser) return;
@@ -1890,7 +1970,6 @@ async function loadChats(){
       users = profiles || [];
     }
 
-    // جيب كل الرسائل الأخيرة لكل شات
     const userChats = [];
     for(const u of users){
       const ch = (chats||[]).find(c => 
@@ -1913,7 +1992,6 @@ async function loadChats(){
       return db - da;
     });
 
-    // Stories row
     const me = currentProfile || {};
     const myHeart = await getMyNoteHearts();
     
@@ -1992,7 +2070,7 @@ async function openChatById(uid){
 }
 
 /* ============================================================
-   MY NOTE HEARTS (للتأكد من القلوب على النوتات)
+   NOTE HEARTS
    ============================================================ */
 async function getMyNoteHearts(){
   try{
@@ -2447,6 +2525,7 @@ async function saveProfile(){
    USER PROFILE VIEWER
    ============================================================ */
 async function openUserProfile(userId){
+  if(!userId) return;
   document.getElementById('userProfilePage').classList.add('show');
   const body = document.getElementById('userProfileBody');
   body.innerHTML = '<div class="loader" style="padding:60px"></div>';
@@ -2756,9 +2835,10 @@ async function loadNotifications(){
 }
 
 /* ============================================================
-   CHAT WINDOW — OPEN/CLOSE
+   CHAT WINDOW — OPEN / CLOSE
    ============================================================ */
 async function openChatWith(otherUser){
+  if(!otherUser) return;
   currentChatUser = otherUser;
   const av = document.getElementById('chatAvatar');
   if(otherUser.avatar_url){
@@ -2813,7 +2893,7 @@ function closeChat(){
 }
 
 /* ============================================================
-   MESSAGES LOAD + RENDER (مع التفاعلات)
+   MESSAGES — LOAD + RENDER
    ============================================================ */
 async function loadMessages(){
   if(!currentChatId) return;
@@ -2823,7 +2903,6 @@ async function loadMessages(){
     if(error) throw error;
     const arr = msgs || [];
 
-    // جيب التفاعلات
     const msgIds = arr.map(m => m.id);
     let reactionsMap = {};
     if(msgIds.length){
@@ -2836,8 +2915,6 @@ async function loadMessages(){
 
     const box = document.getElementById('chatMessages');
     const changed = arr.length !== lastMsgCount;
-    
-    // تحقق من تغيير التفاعلات
     const rxHash = JSON.stringify(reactionsMap);
     if(!changed && box.dataset.rxHash === rxHash) return;
     box.dataset.rxHash = rxHash;
@@ -2855,21 +2932,25 @@ async function loadMessages(){
       const sender = mine ? currentProfile : currentChatUser;
       const rxs = reactionsMap[m.id] || [];
       
-      // جمّع الإيموجيات المتشابهة
       const rxCount = {};
       rxs.forEach(r => { rxCount[r.emoji] = (rxCount[r.emoji]||0) + 1; });
       const rxHTML = Object.keys(rxCount).length
         ? `<div class="msg-reactions">${Object.keys(rxCount).map(e => `<div class="msg-reaction-chip">${e}${rxCount[e]>1?' '+rxCount[e]:''}</div>`).join('')}</div>`
         : '';
       
+      const isImage = m.content && m.content.startsWith('data:image');
+      const contentHTML = isImage
+        ? `<img src="${esc(m.content)}" style="max-width:220px;max-height:280px;border-radius:14px;display:block" alt="">`
+        : esc(m.content);
+      
       const div = document.createElement('div');
       div.className = 'msg-row ' + (mine ? 'me' : 'other');
       div.innerHTML = `
         <div class="msg-avatar">${sender && sender.avatar_url ? `<img src="${esc(sender.avatar_url)}">` : initial(sender)}</div>
-        <div style="display:flex;flex-direction:column;max-width:74%">
+        <div class="msg-col">
           ${rxHTML}
           <div class="msg-bubble ${mine?'me':'other'} ${m.edited?'edited':''}" data-msg-id="${m.id}">
-            <div class="msg-text">${esc(m.content)}</div>
+            <div class="msg-text">${contentHTML}</div>
             <div class="msg-meta">
               <span>${time}</span>
               ${mine ? `<span class="msg-tick"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>` : ''}
@@ -2889,7 +2970,7 @@ async function loadMessages(){
 }
 
 /* ============================================================
-   LONG PRESS DETECTION
+   LONG PRESS
    ============================================================ */
 function attachLongPress(el, msgId, isMine, content){
   let pressTimer = null;
@@ -2935,14 +3016,13 @@ function attachLongPress(el, msgId, isMine, content){
 }
 
 /* ============================================================
-   DOUBLE TAP → ❤️ (رسائل + نوتات)
+   DOUBLE TAP → ❤️
    ============================================================ */
 function attachDoubleTap(el, msgId){
   let lastTap = 0;
   el.addEventListener('touchend', (e) => {
     const now = Date.now();
     if(now - lastTap < 300){
-      // ضغط مزدوج
       e.preventDefault();
       quickReact(msgId, '❤️');
     }
@@ -2952,16 +3032,13 @@ function attachDoubleTap(el, msgId){
 
 async function quickReact(msgId, emoji){
   try{
-    // شوف إذا كاين تفاعل قديم
     const { data: existing } = await sb.from('reactions').select()
       .eq('message_id', msgId).eq('user_id', currentUser.id).maybeSingle();
     
     if(existing){
       if(existing.emoji === emoji){
-        // نفس الإيموجي → حذفو (toggle off)
         await sb.from('reactions').delete().eq('id', existing.id);
       } else {
-        // بدل الإيموجي
         await sb.from('reactions').update({emoji}).eq('id', existing.id);
       }
     } else {
@@ -2975,7 +3052,7 @@ async function quickReact(msgId, emoji){
 }
 
 /* ============================================================
-   MESSAGE MENU (يظهر فوق الرسالة)
+   MESSAGE MENU
    ============================================================ */
 function showMsgMenu(el, msgId, isMine, content){
   currentMsgData = { id: msgId, content, isMine };
@@ -2991,7 +3068,6 @@ function showMsgMenu(el, msgId, isMine, content){
   if(rxLeft < 10) rxLeft = 10;
   if(rxLeft + rxW > window.innerWidth - 10) rxLeft = window.innerWidth - rxW - 10;
 
-  // التفاعلات فوق، القائمة تحت
   let rxTop = rect.top - 60;
   let menuTop = rect.top - 12;
   if(rxTop < 10){
@@ -3060,7 +3136,6 @@ function copyMsg(){
   navigator.clipboard.writeText(txt).then(() => {
     toast('✓ تنسخ');
   }).catch(() => {
-    // fallback
     const ta = document.createElement('textarea');
     ta.value = txt;
     document.body.appendChild(ta);
@@ -3136,8 +3211,50 @@ async function sendMessage(){
     toast(e.message || 'خطأ', 'error');
   }
 }
+
 /* ============================================================
-   STORY TAP HANDLER (واحدة = فتح، زوج = قلب)
+   CHAT — ميزات إضافية (صور، صوت، ملصقات، مكالمات)
+   ============================================================ */
+function pickChatImage(){
+  document.getElementById('chatImgInput').click();
+}
+async function sendChatImage(e){
+  const file = e.target.files[0];
+  if(!file || !currentChatId) return;
+  e.target.value = '';
+  try{
+    const base64 = await compressImage(file, 800, 0.75);
+    const { error } = await sb.from('messages').insert({
+      chat_id: currentChatId,
+      sender_id: currentUser.id,
+      content: base64
+    });
+    if(error) throw error;
+    lastMsgCount = 0;
+    await loadMessages();
+  } catch(err){ toast(err.message || 'خطأ في رفع الصورة', 'error'); }
+}
+
+function startVoiceCall(){ toast('📞 المكالمات قريباً'); }
+function startVideoCall(){ toast('📹 مكالمة الفيديو قريباً'); }
+
+function flagChat(){
+  toast('🏳️ المحادثة تميزت');
+  try{
+    const flagged = JSON.parse(localStorage.getItem('flagged_chats') || '[]');
+    if(!flagged.includes(currentChatId)){
+      flagged.push(currentChatId);
+      localStorage.setItem('flagged_chats', JSON.stringify(flagged));
+    }
+  } catch(e){}
+}
+
+function startVoiceMessage(){ toast('🎤 الرسائل الصوتية قريباً'); }
+function pickSticker(){ toast('😀 الملصقات قريباً'); }
+function openChatPlus(){ toast('➕ المزيد قريباً'); }
+
+/* ============================================================
+   STORY TAP HANDLER
    ============================================================ */
 let storyTapTimer = null;
 let lastStoryTapTime = 0;
@@ -3175,7 +3292,7 @@ function handleStoryTap(e, uid){
 }
 
 /* ============================================================
-   NOTE HEART — ضغط مزدوج على نوت = ❤️
+   NOTE HEART
    ============================================================ */
 async function heartNote(targetUserId){
   if(targetUserId === currentUser.id) return;
@@ -3199,7 +3316,7 @@ async function heartNote(targetUserId){
 }
 
 /* ============================================================
-   IN-APP NOTIFICATION BANNER (يظهر من فوق)
+   IN-APP NOTIFICATION BANNER
    ============================================================ */
 let currentNotifBanner = null;
 let notifBannerTimer = null;
@@ -3212,7 +3329,7 @@ function startNotificationPolling(){
 
 async function checkNewNotifications(){
   if(!currentUser) return;
-  if(currentChatId) return; // متجاهل إذا كنا داخل محادثة
+  if(currentChatId) return;
   if(document.getElementById('chatWindow').classList.contains('show')) return;
   
   try{
@@ -3251,7 +3368,6 @@ async function updateBadges(){
     }
     const chatIds = chats.map(c => c.id);
     
-    // آخر 24 ساعة
     const since = new Date(Date.now() - 24*60*60*1000).toISOString();
     const { data: unread } = await sb.from('messages').select('id')
       .in('chat_id', chatIds)
@@ -3333,7 +3449,7 @@ document.addEventListener('keydown', e => {
 });
 
 /* ============================================================
-   RELOAD BADGES ON FOCUS
+   RELOAD ON FOCUS
    ============================================================ */
 document.addEventListener('visibilitychange', () => {
   if(!document.hidden){
@@ -3347,6 +3463,6 @@ document.addEventListener('visibilitychange', () => {
    READY
    ============================================================ */
 console.log('✅ iNetchat v2 loaded');
-</script>
+  </script>
 </body>
 </html>
